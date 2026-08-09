@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir "aiogram>=3.10,<4" yt-dlp
 WORKDIR /app
 COPY main.py /app/main.py
 
-CMD ["python", "main.py"]
+CMD ["python", "-u", "main.py"]
