@@ -97,7 +97,7 @@ def result_file(folder):
 def download_media(url, mode, quality, folder):
     folder.mkdir(parents=True, exist_ok=True)
     opts = ydl_opts()
-    opts["outtmpl"] = str(folder / "najm_%(id).40B.%(ext)s")
+    opts["outtmpl"] = str(folder / "najm_%(id).32B.%(ext)s")
 
     if mode == "audio":
         opts.update({
@@ -111,21 +111,14 @@ def download_media(url, mode, quality, folder):
     else:
         h = int(quality or 0)
         if h == 0:
-            fmt = (
-                "best[ext=mp4]/"
-                "bestvideo[ext=mp4]+bestaudio[ext=m4a]/"
-                "bestvideo+bestaudio/best"
-            )
+            fmt = "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best"
         else:
             fmt = (
                 f"best[height<={h}][ext=mp4]/"
                 f"bestvideo[height<={h}][ext=mp4]+bestaudio[ext=m4a]/"
                 f"best[height<={h}]/best"
             )
-        opts.update({
-            "format": fmt,
-            "merge_output_format": "mp4",
-        })
+        opts.update({"format": fmt, "merge_output_format": "mp4"})
 
     with yt_dlp.YoutubeDL(opts) as ydl:
         ydl.extract_info(url, download=True)
