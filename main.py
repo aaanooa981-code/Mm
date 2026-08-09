@@ -97,7 +97,7 @@ def result_file(folder):
 def download_media(url, mode, quality, folder):
     folder.mkdir(parents=True, exist_ok=True)
     opts = ydl_opts()
-    opts["outtmpl"] = str(folder / "%(title).120B [%(id)s].%(ext)s")
+    opts["outtmpl"] = str(folder / "najm_%(id).40B.%(ext)s")
 
     if mode == "audio":
         opts.update({
@@ -109,13 +109,21 @@ def download_media(url, mode, quality, folder):
             }],
         })
     else:
-        h = int(quality or 720)
-        opts.update({
-            "format": (
+        h = int(quality or 0)
+        if h == 0:
+            fmt = (
+                "best[ext=mp4]/"
+                "bestvideo[ext=mp4]+bestaudio[ext=m4a]/"
+                "bestvideo+bestaudio/best"
+            )
+        else:
+            fmt = (
                 f"best[height<={h}][ext=mp4]/"
                 f"bestvideo[height<={h}][ext=mp4]+bestaudio[ext=m4a]/"
                 f"best[height<={h}]/best"
-            ),
+            )
+        opts.update({
+            "format": fmt,
             "merge_output_format": "mp4",
         })
 
@@ -127,14 +135,16 @@ def download_media(url, mode, quality, folder):
 
 def keyboard(jid):
     return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="⭐ أفضل جودة", callback_data=f"dl:{jid}:v:0")],
         [
-            InlineKeyboardButton(text="📹 360p", callback_data=f"dl:{jid}:v:360"),
+            InlineKeyboardButton(text="📹 1080p", callback_data=f"dl:{jid}:v:1080"),
             InlineKeyboardButton(text="📹 720p", callback_data=f"dl:{jid}:v:720"),
         ],
         [
-            InlineKeyboardButton(text="📹 1080p", callback_data=f"dl:{jid}:v:1080"),
-            InlineKeyboardButton(text="🎵 MP3", callback_data=f"dl:{jid}:a:0"),
+            InlineKeyboardButton(text="📹 480p", callback_data=f"dl:{jid}:v:480"),
+            InlineKeyboardButton(text="📹 360p", callback_data=f"dl:{jid}:v:360"),
         ],
+        [InlineKeyboardButton(text="🎵 MP3", callback_data=f"dl:{jid}:a:0")],
         [InlineKeyboardButton(text="❌ إلغاء", callback_data=f"cancel:{jid}")],
     ])
 
