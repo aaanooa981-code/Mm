@@ -90,9 +90,9 @@ public class MainActivity extends Activity implements LocationListener {
         root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(14),dp(8),dp(14),dp(12));
         shell.addView(root,new FrameLayout.LayoutParams(-1,-1));
 
-        TextView pull=label("━━━  اسحب للأسفل لمركز التحكم  ━━━",11,Color.rgb(170,195,220),false);
-        pull.setGravity(Gravity.CENTER);
-        root.addView(pull,new LinearLayout.LayoutParams(-1,dp(24)));
+        View pull=new View(this);
+        pull.setBackgroundColor(Color.TRANSPARENT);
+        root.addView(pull,new LinearLayout.LayoutParams(-1,dp(12)));
 
         LinearLayout status=new LinearLayout(this); status.setGravity(Gravity.CENTER_VERTICAL);
         TextView brand=label("✦  Najm Space",20,Color.WHITE,true);
@@ -138,14 +138,9 @@ public class MainActivity extends Activity implements LocationListener {
         LinearLayout center=new LinearLayout(this);center.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams clp=new LinearLayout.LayoutParams(0,-1,2.4f);clp.leftMargin=dp(10);body.addView(center,clp);
 
-        LinearLayout hero=new LinearLayout(this);hero.setOrientation(LinearLayout.VERTICAL);hero.setPadding(dp(18),dp(12),dp(18),dp(12));
-        hero.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(24,70,120),Color.rgb(16,34,61)}));
-        hero.addView(label("Drive smarter",27,Color.WHITE,true));
-        hero.addView(label("Premium home • GPS speed • Maps • Apps",13,Color.rgb(205,225,245),false));
-        center.addView(hero,new LinearLayout.LayoutParams(-1,dp(76)));
-
         LinearLayout cards=new LinearLayout(this);
-        LinearLayout.LayoutParams cardsLp=new LinearLayout.LayoutParams(-1,0,1);cardsLp.topMargin=dp(8);center.addView(cards,cardsLp);
+        LinearLayout.LayoutParams cardsLp=new LinearLayout.LayoutParams(-1,0,1);
+        center.addView(cards,cardsLp);
 
         LinearLayout music=new LinearLayout(this);music.setOrientation(LinearLayout.VERTICAL);music.setPadding(dp(14),dp(12),dp(14),dp(12));
         music.setBackground(card(Color.rgb(17,36,58),22,Color.argb(80,70,155,230)));
@@ -154,11 +149,11 @@ public class MainActivity extends Activity implements LocationListener {
         TextView controls=label("⏮     ▶     ⏭",24,Color.rgb(75,190,255),true);controls.setGravity(Gravity.CENTER);
         music.addView(controls,new LinearLayout.LayoutParams(-1,0,1));
         music.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMusic();}});
-        cards.addView(music,new LinearLayout.LayoutParams(0,-1,1));
+        cards.addView(music,new LinearLayout.LayoutParams(0,-1,.72f));
 
         LinearLayout mapCard=new LinearLayout(this);mapCard.setOrientation(LinearLayout.VERTICAL);mapCard.setPadding(dp(10),dp(10),dp(10),dp(8));
         mapCard.setBackground(card(Color.rgb(13,31,51),22,Color.argb(100,55,165,245)));
-        LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,1.25f);mlp.leftMargin=dp(8);cards.addView(mapCard,mlp);
+        LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,2.15f);mlp.leftMargin=dp(8);cards.addView(mapCard,mlp);
         TextView mapTitle=label("الخريطة",17,Color.WHITE,true);mapCard.addView(mapTitle,new LinearLayout.LayoutParams(-1,dp(24)));
         MapPreviewView map=new MapPreviewView(this);mapCard.addView(map,new LinearLayout.LayoutParams(-1,0,1));
         coords=label("اضغط لفتح الملاحة",11,Color.rgb(175,195,220),false);coords.setGravity(Gravity.CENTER);
@@ -166,13 +161,13 @@ public class MainActivity extends Activity implements LocationListener {
         mapCard.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMap();}});
 
         LinearLayout launchers=new LinearLayout(this);launchers.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.68f);llp.leftMargin=dp(8);cards.addView(launchers,llp);
+        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.55f);llp.leftMargin=dp(8);cards.addView(launchers,llp);
         TextView youtube=tile("▶","YouTube",Color.rgb(200,45,52));
         youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(MainActivity.this,CompatibilityActivity.class));}});
         launchers.addView(youtube,new LinearLayout.LayoutParams(-1,0,1));
         TextView apps=tile("▦","التطبيقات",Color.rgb(46,97,170));
         LinearLayout.LayoutParams alp=new LinearLayout.LayoutParams(-1,0,1);alp.topMargin=dp(8);launchers.addView(apps,alp);
-        apps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(MainActivity.this,AppsActivity.class));}});
+        apps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(MainActivity.this,NajmAppsActivity.class));}});
 
         LinearLayout dock=new LinearLayout(this);dock.setPadding(dp(6),dp(5),dp(6),dp(5));
         dock.setBackground(card(Color.argb(225,15,24,38),24,Color.argb(70,100,165,230)));
@@ -184,7 +179,7 @@ public class MainActivity extends Activity implements LocationListener {
                 if(idx==1)openMusic();
                 if(idx==2)startActivity(new Intent(MainActivity.this,CompatibilityActivity.class));
                 if(idx==3)startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com")));
-                if(idx==4)startActivity(new Intent(MainActivity.this,AppsActivity.class));
+                if(idx==4)startActivity(new Intent(MainActivity.this,NajmAppsActivity.class));
             }});
             dock.addView(d,new LinearLayout.LayoutParams(0,dp(60),1));
         }
