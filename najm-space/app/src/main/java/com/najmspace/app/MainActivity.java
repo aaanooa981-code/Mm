@@ -11,6 +11,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.AudioManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.speech.RecognizerIntent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,10 +35,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends Activity implements LocationListener {
+public class MainActivity extends Activity implements LocationListener, SensorEventListener {
     private TextView clock,date,gpsState,coords;
     private SpeedometerView speedometer;
     private HomeMapView homeMap;
+    private CompassView compassView;
+    private EditText mapSearch;
+    private SensorManager sensorManager;
+    private Sensor orientationSensor;
     private FrameLayout shell,shade;
     private LinearLayout navigationBar;
     private long lastBottomTap=0;
@@ -43,6 +52,7 @@ public class MainActivity extends Activity implements LocationListener {
     private LocationManager locationManager;
     private double lastLat=24.7136,lastLon=46.6753;
     private static final int REQ_LOCATION=91;
+    private static final int REQ_VOICE=92;
 
     private final Runnable tick=new Runnable(){
         @Override public void run(){
@@ -160,7 +170,9 @@ public class MainActivity extends Activity implements LocationListener {
         LinearLayout.LayoutParams slp=new LinearLayout.LayoutParams(-1,0,1);slp.topMargin=dp(10);
         speedometer=new SpeedometerView(this);speedCard.addView(speedometer,new LinearLayout.LayoutParams(-1,0,1));
         gpsState=label("GPS: جاري البحث...",12,Color.rgb(229,181,82),false);gpsState.setGravity(Gravity.CENTER);
-        speedCard.addView(gpsState,new LinearLayout.LayoutParams(-1,dp(24)));
+        speedCard.addView(gpsState,new LinearLayout.LayoutParams(-1,dp(22)));
+        compassView=new CompassView(this);
+        speedCard.addView(compassView,new LinearLayout.LayoutParams(-1,dp(74)));
         left.addView(speedCard,slp);
 
         body.addView(left,new LinearLayout.LayoutParams(0,-1,1.05f));
@@ -182,35 +194,46 @@ public class MainActivity extends Activity implements LocationListener {
         music.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMusic();}});
         cards.addView(music,new LinearLayout.LayoutParams(0,-1,.72f));
 
-        LinearLayout mapCard=new LinearLayout(this);mapCard.setOrientation(LinearLayout.VERTICAL);mapCard.setPadding(dp(10),dp(10),dp(10),dp(8));
+        FrameLayout mapCard=new FrameLayout(this);
         mapCard.setBackground(card(Color.rgb(13,31,51),22,Color.argb(100,55,165,245)));
         LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,2.15f);mlp.leftMargin=dp(10);cards.addView(mapCard,mlp);
+
+        homeMap=new HomeMapView(this);
+        mapCard.addView(homeMap,new FrameLayout.LayoutParams(-1,-1));
+
         LinearLayout mapTop=new LinearLayout(this);
         mapTop.setOrientation(LinearLayout.HORIZONTAL);
         mapTop.setGravity(Gravity.CENTER_VERTICAL);
+        mapTop.setPadding(dp(10),dp(8),dp(10),dp(4));
+        mapTop.setBackground(card(Color.argb(45,8,18,30),16,0));
 
-        final EditText mapSearch=new EditText(this);
+        mapSearch=new EditText(this);
         mapSearch.setSingleLine(true);
         mapSearch.setHint("ابحث عن مكان...");
         mapSearch.setTextColor(Color.WHITE);
-        mapSearch.setHintTextColor(Color.rgb(155,180,205));
+        mapSearch.setHintTextColor(Color.rgb(205,220,235));
         mapSearch.setTextSize(14);
-        mapSearch.setBackground(card(Color.rgb(20,42,65),16,Color.argb(80,80,170,235)));
+        mapSearch.setBackground(card(Color.argb(80,10,24,38),16,Color.argb(120,140,200,245)));
         mapSearch.setPadding(dp(12),0,dp(12),0);
         mapTop.addView(mapSearch,new LinearLayout.LayoutParams(0,dp(40),1));
 
-        TextView searchBtn=tile("⌕","بحث",Color.rgb(36,104,165));
-        LinearLayout.LayoutParams sbp=new LinearLayout.LayoutParams(dp(72),dp(40));sbp.leftMargin=dp(6);
-        mapTop.addView(searchBtn,sbp);
+        TextView micBtn=tile("🎤","",Color.argb(150,34,88,128));
+        LinearLayout.LayoutParams micp=new LinearLayout.LayoutParams(dp(48),dp(40));micp.leftMargin=dp(6);mapTop.addView(micBtn,micp);
 
-        TextView gpsBtn=tile("⌖","موقعي",Color.rgb(38,118,92));
-        LinearLayout.LayoutParams gbp=new LinearLayout.LayoutParams(dp(72),dp(40));gbp.leftMargin=dp(6);
-        mapTop.addView(gpsBtn,gbp);
+        TextView searchBtn=tile("⌕","",Color.argb(160,36,104,165));
+        LinearLayout.LayoutParams sbp=new LinearLayout.LayoutParams(dp(48),dp(40));sbp.leftMargin=dp(6);mapTop.addView(searchBtn,sbp);
 
-        mapCard.addView(mapTop,new LinearLayout.LayoutParams(-1,dp(42)));
+        TextView gpsBtn=tile("⌖","",Color.argb(160,38,118,92));
+        LinearLayout.LayoutParams gbp=new LinearLayout.LayoutParams(dp(48),dp(40));gbp.leftMargin=dp(6);mapTop.addView(gpsBtn,gbp);
 
-        homeMap=new HomeMapView(this);mapCard.addView(homeMap,new LinearLayout.LayoutParams(-1,0,1));
+        FrameLayout.LayoutParams mtp=new FrameLayout.LayoutParams(-1,dp(56));mtp.gravity=Gravity.TOP;mapCard.addView(mapTop,mtp);
+
+        coords=label("الموقع الحالي",11,Color.WHITE,true);coords.setGravity(Gravity.CENTER);
+        coords.setBackground(card(Color.argb(100,8,18,30),12,0));
+        FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(dp(150),dp(26));cp.gravity=Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL;cp.bottomMargin=dp(7);mapCard.addView(coords,cp);
+
         searchBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){homeMap.search(mapSearch.getText().toString());}});
+        micBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startVoiceSearch();}});
         mapSearch.setOnEditorActionListener(new TextView.OnEditorActionListener(){
             @Override public boolean onEditorAction(TextView v,int actionId,android.view.KeyEvent event){
                 homeMap.search(mapSearch.getText().toString());
@@ -218,9 +241,6 @@ public class MainActivity extends Activity implements LocationListener {
             }
         });
         gpsBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){homeMap.showCurrentLocation();}});
-        coords=label("اضغط لفتح الملاحة",11,Color.rgb(175,195,220),false);coords.setGravity(Gravity.CENTER);
-        mapCard.addView(coords,new LinearLayout.LayoutParams(-1,dp(22)));
-        mapCard.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMap();}});
 
         LinearLayout launchers=new LinearLayout(this);launchers.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.72f);llp.leftMargin=dp(10);cards.addView(launchers,llp);
@@ -296,11 +316,46 @@ public class MainActivity extends Activity implements LocationListener {
             }
         });
         root.addView(navHotZone,new LinearLayout.LayoutParams(-1,dp(12)));
+        sensorManager=(SensorManager)getSystemService(SENSOR_SERVICE);
+        if(sensorManager!=null)orientationSensor=sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         setContentView(shell);
         animateIn(root);
         NajmHints.show(this,"main_navigation","تلميح","استخدم ◁ للرجوع للتطبيق السابق، ○ للهوم، و▢ للتطبيقات المفتوحة.");
         startLocationIfAllowed();
     }
+
+    private void startVoiceSearch(){
+        try{
+            Intent i=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            i.putExtra(RecognizerIntent.EXTRA_LANGUAGE,"ar-SA");
+            i.putExtra(RecognizerIntent.EXTRA_PROMPT,"قل اسم المكان");
+            startActivityForResult(i,REQ_VOICE);
+        }catch(Exception e){
+            NajmHints.show(this,"voice_search_unavailable","البحث الصوتي","خدمة التعرف على الصوت غير متاحة على هذه الشاشة.");
+        }
+    }
+
+    @Override protected void onActivityResult(int request,int result,Intent data){
+        super.onActivityResult(request,result,data);
+        if(request==REQ_VOICE && result==RESULT_OK && data!=null){
+            java.util.ArrayList<String> results=data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if(results!=null && !results.isEmpty()){
+                String q=results.get(0);
+                if(mapSearch!=null)mapSearch.setText(q);
+                if(homeMap!=null)homeMap.search(q);
+            }
+        }
+    }
+
+    @Override public void onSensorChanged(SensorEvent event){
+        if(event.sensor.getType()==Sensor.TYPE_ORIENTATION && compassView!=null){
+            float az=event.values[0];
+            if(az<0)az+=360f;
+            compassView.setAzimuth(az);
+        }
+    }
+    @Override public void onAccuracyChanged(Sensor sensor,int accuracy){}
 
     private void toggleNavigationBar(){
         if(navigationBar==null)return;
@@ -424,7 +479,12 @@ public class MainActivity extends Activity implements LocationListener {
         super.onResume();
         handler.post(tick);
         NajmRecentStore.touch(this,"home","الرئيسية","com.najmspace.app.MainActivity");
+        if(sensorManager!=null && orientationSensor!=null) sensorManager.registerListener(this,orientationSensor,SensorManager.SENSOR_DELAY_UI);
     }
-    @Override protected void onPause(){handler.removeCallbacks(tick);super.onPause();}
+    @Override protected void onPause(){
+        handler.removeCallbacks(tick);
+        if(sensorManager!=null)sensorManager.unregisterListener(this);
+        super.onPause();
+    }
     @Override protected void onDestroy(){try{if(locationManager!=null)locationManager.removeUpdates(this);}catch(Exception ignored){}super.onDestroy();}
 }
