@@ -1,11 +1,14 @@
 package com.najmspace.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -13,6 +16,8 @@ import android.database.Cursor;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -26,9 +31,11 @@ import java.util.zip.ZipInputStream;
 public class NajmAppsActivity extends Activity {
     private static final int PICK_APK=201;
     private static final int PICK_MINI=202;
-    private LinearLayout list;
+    private GridLayout grid;
     private File appsDir;
     private File miniDir;
+
+    private int dp(int v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
@@ -37,77 +44,277 @@ public class NajmAppsActivity extends Activity {
 
         LinearLayout root=new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(20,14,20,14);
+        root.setPadding(dp(14),dp(10),dp(14),dp(8));
         root.setBackgroundColor(Color.rgb(8,16,29));
 
+        LinearLayout top=new LinearLayout(this);
+        top.setGravity(Gravity.CENTER_VERTICAL);
+
         TextView title=new TextView(this);
-        title.setText("NAJM APP SPACE  V1.6");
+        title.setText("NAJM APP SPACE");
         title.setTextColor(Color.WHITE);
         title.setTextSize(25);
         title.setTypeface(Typeface.DEFAULT_BOLD);
-        root.addView(title);
+        top.addView(title,new LinearLayout.LayoutParams(0,dp(52),1));
 
-        TextView desc=new TextView(this);
-        desc.setText("ⓘ  تلميح");
-        desc.setTextColor(Color.rgb(105,190,255));
-        desc.setTextSize(14);
-        desc.setPadding(0,6,0,10);
-        desc.setOnClickListener(new View.OnClickListener(){
-            @Override public void onClick(View v){
-                NajmHints.show(NajmAppsActivity.this,"app_space","تلميح","Mini Apps تعمل داخل Najm Space مباشرة. ملفات APK العادية تحفظ في مساحة Najm إلى أن يكتمل Legacy Container.");
-            }
-        });
-        root.addView(desc);
-
-        Button youtube=new Button(this);
-        youtube.setText("▶ YouTube داخل Najm Space");
-        youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"YouTube","https://m.youtube.com");}});
-        root.addView(youtube,new LinearLayout.LayoutParams(-1,52));
-
-        Button browser=new Button(this);
-        browser.setText("◎ المتصفح داخل Najm Space");
-        browser.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"Najm Browser","https://www.google.com");}});
-        LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,52);bp.topMargin=6;root.addView(browser,bp);
-
-        Button maps=new Button(this);
-        maps.setText("⌖ الخرائط داخل Najm Space");
-        maps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"Najm Maps","https://www.openstreetmap.org");}});
-        LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(-1,52);mp.topMargin=6;root.addView(maps,mp);
-
-        Button filesBtn=new Button(this); filesBtn.setText("📁 مدير الملفات / USB"); filesBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmAppsActivity.this,NajmFileManagerActivity.class));}}); LinearLayout.LayoutParams fbp=new LinearLayout.LayoutParams(-1,52);fbp.topMargin=8;root.addView(filesBtn,fbp);
-
-        LinearLayout imports=new LinearLayout(this);
-        imports.setOrientation(LinearLayout.HORIZONTAL);
+        Button importBtn=new Button(this);
+        importBtn.setText("+ APK");
+        importBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){pickApk();}});
+        top.addView(importBtn,new LinearLayout.LayoutParams(dp(100),dp(46)));
 
         Button miniBtn=new Button(this);
-        miniBtn.setText("+ Mini App HTML/ZIP");
+        miniBtn.setText("+ Mini");
         miniBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){pickMini();}});
-        imports.addView(miniBtn,new LinearLayout.LayoutParams(0,52,1));
+        LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(dp(100),dp(46));mp.leftMargin=dp(6);
+        top.addView(miniBtn,mp);
 
-        Button apkBtn=new Button(this);
-        apkBtn.setText("+ APK Legacy");
-        apkBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){pickApk();}});
-        LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(0,52,1);ap.leftMargin=6;
-        imports.addView(apkBtn,ap);
+        root.addView(top);
 
-        LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(-1,52);ip.topMargin=8;
-        root.addView(imports,ip);
-
-        Button runtime=new Button(this);
-        runtime.setText("⚙ حالة Runtime Engine");
-        runtime.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openRuntimeManager(NajmAppsActivity.this);}});
-        LinearLayout.LayoutParams rp0=new LinearLayout.LayoutParams(-1,50);rp0.topMargin=6;root.addView(runtime,rp0);
+        TextView hint=new TextView(this);
+        hint.setText("ⓘ  اضغط للتلميحات");
+        hint.setTextColor(Color.rgb(105,190,255));
+        hint.setTextSize(13);
+        hint.setPadding(0,0,0,dp(8));
+        hint.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(View v){
+                NajmHints.show(NajmAppsActivity.this,"app_grid","تلميح",
+                    "التطبيقات تظهر كأيقونات. اضغط للتشغيل، واضغط مطولًا على التطبيق المستورد للحذف أو عرض المعلومات.");
+            }
+        });
+        root.addView(hint);
 
         ScrollView scroll=new ScrollView(this);
-        list=new LinearLayout(this);
-        list.setOrientation(LinearLayout.VERTICAL);
-        scroll.addView(list,new ScrollView.LayoutParams(-1,-2));
-        LinearLayout.LayoutParams slp=new LinearLayout.LayoutParams(-1,0,1);slp.topMargin=10;
-        root.addView(scroll,slp);
-        root.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,62));
+        grid=new GridLayout(this);
+        grid.setColumnCount(6);
+        grid.setUseDefaultMargins(false);
+        grid.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
+        grid.setPadding(0,0,0,dp(8));
+        scroll.addView(grid,new ScrollView.LayoutParams(-1,-2));
+        root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+
+        root.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,dp(62)));
 
         setContentView(root);
         refresh();
+    }
+
+    private void refresh(){
+        grid.removeAllViews();
+
+        addShortcut("YouTube","▶",Color.rgb(198,45,55),new View.OnClickListener(){
+            @Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"YouTube","https://m.youtube.com");}
+        });
+
+        addShortcut("المتصفح","◎",Color.rgb(45,110,180),new View.OnClickListener(){
+            @Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"Najm Browser","https://www.google.com");}
+        });
+
+        addShortcut("الخرائط","⌖",Color.rgb(36,125,96),new View.OnClickListener(){
+            @Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"Najm Maps","https://www.openstreetmap.org");}
+        });
+
+        addShortcut("الملفات","▤",Color.rgb(48,118,148),new View.OnClickListener(){
+            @Override public void onClick(View v){startActivity(new Intent(NajmAppsActivity.this,NajmFileManagerActivity.class));}
+        });
+
+        addShortcut("AppGallery","✦",Color.rgb(180,46,49),new View.OnClickListener(){
+            @Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");}
+        });
+
+        addShortcut("الإعدادات","⚙",Color.rgb(88,76,132),new View.OnClickListener(){
+            @Override public void onClick(View v){startActivity(new Intent(NajmAppsActivity.this,NajmSettingsActivity.class));}
+        });
+
+        File[] minis=miniDir.listFiles();
+        if(minis!=null){
+            int count=1;
+            for(final File folder:minis){
+                if(!folder.isDirectory())continue;
+                final File entry=findEntry(folder);
+                if(entry==null)continue;
+                addMiniTile(folder,entry,"Mini App "+count);
+                count++;
+            }
+        }
+
+        File[] files=appsDir.listFiles();
+        if(files!=null){
+            PackageManager pm=getPackageManager();
+            for(final File f:files){
+                if(!f.getName().toLowerCase().endsWith(".apk"))continue;
+                PackageInfo pi=pm.getPackageArchiveInfo(f.getAbsolutePath(),0);
+                String appName=f.getName();
+                String pkg="";
+                Drawable icon=null;
+
+                if(pi!=null){
+                    pi.applicationInfo.sourceDir=f.getAbsolutePath();
+                    pi.applicationInfo.publicSourceDir=f.getAbsolutePath();
+                    try{appName=pm.getApplicationLabel(pi.applicationInfo).toString();}catch(Exception ignored){}
+                    try{icon=pm.getApplicationIcon(pi.applicationInfo);}catch(Exception ignored){}
+                    pkg=pi.packageName==null?"":pi.packageName;
+                }
+
+                final String finalName=appName;
+                final String finalPkg=pkg;
+                final boolean isAppGallery="com.huawei.appmarket".equals(finalPkg) || finalName.toLowerCase().contains("appgallery");
+
+                View tile=createAppTile(finalName,icon,isAppGallery?"جاهز":"محفوظ");
+                tile.setOnClickListener(new View.OnClickListener(){
+                    @Override public void onClick(View v){
+                        if(isAppGallery){
+                            RuntimeRouter.openWeb(NajmAppsActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
+                        }else{
+                            NajmHints.show(NajmAppsActivity.this,"legacy_apk","التطبيق",
+                                "هذا الـAPK محفوظ داخل Najm Space. تشغيل APK كامل داخل الحاوية ينتظر Legacy Container.");
+                        }
+                    }
+                });
+                tile.setOnLongClickListener(new View.OnLongClickListener(){
+                    @Override public boolean onLongClick(View v){
+                        showApkOptions(f,finalName,finalPkg);
+                        return true;
+                    }
+                });
+                addTile(tile);
+            }
+        }
+    }
+
+    private void addShortcut(String name,String symbol,int color,View.OnClickListener listener){
+        LinearLayout tile=createBaseTile(name);
+        TextView icon=new TextView(this);
+        icon.setText(symbol);
+        icon.setTextColor(Color.WHITE);
+        icon.setTextSize(34);
+        icon.setGravity(Gravity.CENTER);
+        icon.setBackgroundColor(color);
+        tile.addView(icon,new LinearLayout.LayoutParams(dp(66),dp(66)));
+        tile.setOnClickListener(listener);
+        addTile(tile);
+    }
+
+    private void addMiniTile(final File folder,final File entry,String name){
+        LinearLayout tile=createBaseTile(name);
+        ImageView icon=new ImageView(this);
+        icon.setImageResource(R.mipmap.ic_launcher);
+        icon.setPadding(dp(6),dp(6),dp(6),dp(6));
+        tile.addView(icon,new LinearLayout.LayoutParams(dp(66),dp(66)));
+
+        tile.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(View v){
+                Intent i=new Intent(NajmAppsActivity.this,MiniAppRuntimeActivity.class);
+                i.putExtra("path",entry.getAbsolutePath());
+                i.putExtra("title",folder.getName());
+                startActivity(i);
+            }
+        });
+
+        tile.setOnLongClickListener(new View.OnLongClickListener(){
+            @Override public boolean onLongClick(View v){
+                new AlertDialog.Builder(NajmAppsActivity.this)
+                    .setTitle("Mini App")
+                    .setItems(new String[]{"تشغيل","حذف"},new DialogInterface.OnClickListener(){
+                        @Override public void onClick(DialogInterface d,int which){
+                            if(which==0){
+                                Intent i=new Intent(NajmAppsActivity.this,MiniAppRuntimeActivity.class);
+                                i.putExtra("path",entry.getAbsolutePath());
+                                i.putExtra("title",folder.getName());
+                                startActivity(i);
+                            }else{
+                                deleteTree(folder);
+                                refresh();
+                            }
+                        }
+                    }).show();
+                return true;
+            }
+        });
+        addTile(tile);
+    }
+
+    private LinearLayout createAppTile(String name,Drawable iconDrawable,String badge){
+        LinearLayout tile=createBaseTile(name);
+
+        if(iconDrawable!=null){
+            ImageView icon=new ImageView(this);
+            icon.setImageDrawable(iconDrawable);
+            icon.setPadding(dp(4),dp(4),dp(4),dp(4));
+            tile.addView(icon,new LinearLayout.LayoutParams(dp(66),dp(66)));
+        }else{
+            ImageView icon=new ImageView(this);
+            icon.setImageResource(R.mipmap.ic_launcher);
+            icon.setPadding(dp(6),dp(6),dp(6),dp(6));
+            tile.addView(icon,new LinearLayout.LayoutParams(dp(66),dp(66)));
+        }
+
+        if(badge!=null && badge.length()>0){
+            TextView state=new TextView(this);
+            state.setText(badge);
+            state.setTextColor(Color.rgb(110,200,255));
+            state.setTextSize(10);
+            state.setGravity(Gravity.CENTER);
+            tile.addView(state,new LinearLayout.LayoutParams(-1,dp(18)));
+        }
+        return tile;
+    }
+
+    private LinearLayout createBaseTile(String name){
+        LinearLayout tile=new LinearLayout(this);
+        tile.setOrientation(LinearLayout.VERTICAL);
+        tile.setGravity(Gravity.CENTER_HORIZONTAL);
+        tile.setPadding(dp(7),dp(8),dp(7),dp(6));
+        tile.setBackgroundColor(Color.rgb(16,31,50));
+        tile.setClickable(true);
+        tile.setFocusable(true);
+
+        TextView label=new TextView(this);
+        label.setText(name);
+        label.setTextColor(Color.WHITE);
+        label.setTextSize(12);
+        label.setGravity(Gravity.CENTER);
+        label.setMaxLines(2);
+
+        tile.addView(label,new LinearLayout.LayoutParams(-1,dp(38)));
+
+        tile.setOnTouchListener(new View.OnTouchListener(){
+            @Override public boolean onTouch(View v,android.view.MotionEvent e){
+                if(e.getAction()==android.view.MotionEvent.ACTION_DOWN){
+                    v.animate().scaleX(.93f).scaleY(.93f).setDuration(60).start();
+                }else if(e.getAction()==android.view.MotionEvent.ACTION_UP || e.getAction()==android.view.MotionEvent.ACTION_CANCEL){
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                }
+                return false;
+            }
+        });
+        return tile;
+    }
+
+    private void addTile(View tile){
+        GridLayout.LayoutParams lp=new GridLayout.LayoutParams();
+        lp.width=0;
+        lp.height=dp(132);
+        lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);
+        lp.setMargins(dp(5),dp(5),dp(5),dp(5));
+        grid.addView(tile,lp);
+    }
+
+    private void showApkOptions(final File f,String appName,String pkg){
+        String detail=(pkg==null||pkg.length()==0)?f.getName():pkg;
+        new AlertDialog.Builder(this)
+            .setTitle(appName)
+            .setMessage(detail)
+            .setItems(new String[]{"معلومات","حذف"},new DialogInterface.OnClickListener(){
+                @Override public void onClick(DialogInterface d,int which){
+                    if(which==0){
+                        NajmHints.show(NajmAppsActivity.this,"apk_info","معلومات التطبيق",
+                            "الملف محفوظ داخل مساحة Najm Space في:\n"+f.getAbsolutePath());
+                    }else{
+                        f.delete();
+                        refresh();
+                    }
+                }
+            }).show();
     }
 
     private void pickApk(){
@@ -177,8 +384,6 @@ public class NajmAppsActivity extends Activity {
                 zin.close();
             }catch(Exception ignored){}
         }else{
-            String safe=safe(name);
-            if(!safe.toLowerCase().endsWith(".html") && !safe.toLowerCase().endsWith(".htm"))safe=safe+".html";
             File folder=new File(miniDir,"mini_"+System.currentTimeMillis());
             folder.mkdirs();
             copy(uri,new File(folder,"index.html"));
@@ -210,81 +415,6 @@ public class NajmAppsActivity extends Activity {
         return null;
     }
 
-    private void refresh(){
-        list.removeAllViews();
-        addSectionTitle("MINI APPS — تشغيل داخلي");
-
-        File[] minis=miniDir.listFiles();
-        int miniCount=0;
-        if(minis!=null){
-            for(final File folder:minis){
-                if(!folder.isDirectory())continue;
-                File entry=findEntry(folder);
-                if(entry==null)continue;
-                miniCount++;
-                final File entryFinal=entry;
-                LinearLayout row=row();
-                LinearLayout info=info("Mini App "+miniCount,"Internal Runtime • "+entry.getName(),Color.rgb(70,205,130));
-                row.addView(info,new LinearLayout.LayoutParams(0,-2,1));
-
-                Button run=new Button(this);run.setText("تشغيل");
-                run.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-                    Intent i=new Intent(NajmAppsActivity.this,MiniAppRuntimeActivity.class);
-                    i.putExtra("path",entryFinal.getAbsolutePath());
-                    i.putExtra("title",folder.getName());
-                    startActivity(i);
-                }});
-                row.addView(run,new LinearLayout.LayoutParams(92,48));
-
-                Button del=new Button(this);del.setText("حذف");
-                del.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){deleteTree(folder);refresh();}});
-                row.addView(del,new LinearLayout.LayoutParams(86,48));
-                addRow(row);
-            }
-        }
-        if(miniCount==0)addEmpty("لا توجد Mini Apps. استورد HTML أو ZIP.");
-
-        addSectionTitle("APK — LEGACY CONTAINER");
-        File[] files=appsDir.listFiles();
-        int apkCount=0;
-        PackageManager pm=getPackageManager();
-        if(files!=null){
-            for(final File f:files){
-                if(!f.getName().toLowerCase().endsWith(".apk"))continue;
-                apkCount++;
-                PackageInfo pi=pm.getPackageArchiveInfo(f.getAbsolutePath(),0);
-                String appName=f.getName(), pkg="APK محفوظ داخل Najm Space";
-                if(pi!=null){
-                    pi.applicationInfo.sourceDir=f.getAbsolutePath();
-                    pi.applicationInfo.publicSourceDir=f.getAbsolutePath();
-                    try{appName=pm.getApplicationLabel(pi.applicationInfo).toString();}catch(Exception ignored){}
-                    pkg=pi.packageName;
-                }
-                LinearLayout row=row();
-                final String pkgFinal=pkg;
-                final String nameFinal=appName;
-                boolean isAppGallery="com.huawei.appmarket".equals(pkgFinal) || nameFinal.toLowerCase().contains("appgallery");
-                String state=isAppGallery ? "Compatibility Runtime جاهز" : "Legacy Container Pending";
-                int stateColor=isAppGallery ? Color.rgb(70,205,130) : Color.rgb(235,185,80);
-                row.addView(info(appName,pkg+" • "+state,stateColor),new LinearLayout.LayoutParams(0,-2,1));
-
-                if(isAppGallery){
-                    Button run=new Button(this);run.setText("تشغيل");
-                    run.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-                        RuntimeRouter.openWeb(NajmAppsActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
-                    }});
-                    row.addView(run,new LinearLayout.LayoutParams(92,48));
-                }
-
-                Button del=new Button(this);del.setText("حذف");
-                del.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){f.delete();refresh();}});
-                row.addView(del,new LinearLayout.LayoutParams(86,48));
-                addRow(row);
-            }
-        }
-        if(apkCount==0)addEmpty("لا توجد APK محفوظة.");
-    }
-
     private File findEntry(File folder){
         File direct=new File(folder,"index.html");if(direct.exists())return direct;
         File[] fs=folder.listFiles();
@@ -301,37 +431,14 @@ public class NajmAppsActivity extends Activity {
 
     private void deleteTree(File f){
         if(f.isDirectory()){
-            File[] fs=f.listFiles();if(fs!=null)for(File x:fs)deleteTree(x);
+            File[] fs=f.listFiles();
+            if(fs!=null)for(File x:fs)deleteTree(x);
         }
         f.delete();
     }
 
-    private LinearLayout row(){
-        LinearLayout r=new LinearLayout(this);r.setOrientation(LinearLayout.HORIZONTAL);r.setGravity(Gravity.CENTER_VERTICAL);
-        r.setPadding(12,10,12,10);r.setBackgroundColor(Color.rgb(17,34,54));return r;
-    }
-
-    private LinearLayout info(String name,String detail,int color){
-        LinearLayout i=new LinearLayout(this);i.setOrientation(LinearLayout.VERTICAL);
-        TextView n=new TextView(this);n.setText(name);n.setTextColor(Color.WHITE);n.setTextSize(17);n.setTypeface(Typeface.DEFAULT_BOLD);
-        TextView d=new TextView(this);d.setText(detail);d.setTextColor(color);d.setTextSize(12);
-        i.addView(n);i.addView(d);return i;
-    }
-
-    private void addRow(LinearLayout row){
-        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=7;list.addView(row,lp);
-    }
-
-    private void addSectionTitle(String text){
-        TextView t=new TextView(this);t.setText(text);t.setTextColor(Color.rgb(100,200,255));t.setTextSize(15);t.setTypeface(Typeface.DEFAULT_BOLD);t.setPadding(0,8,0,7);list.addView(t);
-    }
-
-    private void addEmpty(String text){
-        TextView e=new TextView(this);e.setText(text);e.setTextColor(Color.rgb(145,165,190));e.setTextSize(14);e.setPadding(8,10,8,16);list.addView(e);
-    }
     @Override protected void onResume(){
         super.onResume();
         NajmRecentStore.touch(this,"apps","NAJM APP SPACE","com.najmspace.app.NajmAppsActivity");
     }
-
 }
