@@ -35,7 +35,8 @@ public class NajmSettingsActivity extends Activity {
         side.setPadding(dp(10),dp(12),dp(10),dp(12));
         side.setBackgroundColor(Color.rgb(10,22,38));
 
-        TextView title=txt("⚙\nNAJM SETTINGS",19,Color.WHITE,true);
+        TextView title=txt("⚙
+NAJM SETTINGS",19,Color.WHITE,true);
         title.setGravity(Gravity.CENTER);
         side.addView(title,new LinearLayout.LayoutParams(-1,dp(92)));
 
@@ -159,7 +160,8 @@ public class NajmSettingsActivity extends Activity {
         if(s==5){
             content.addView(heading("التخزين"));
             content.addView(sub("ملفات APK المستوردة تحفظ داخل مساحة التطبيق الخاصة."));
-            action("فتح التطبيقات المحفوظة",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmAppsActivity.class));}});\n            action("مدير الملفات / USB",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmFileManagerActivity.class));}});
+            action("فتح التطبيقات المحفوظة",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmAppsActivity.class));}});
+            action("مدير الملفات / USB",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmFileManagerActivity.class));}});
             action("مسح التطبيقات المستوردة",new View.OnClickListener(){@Override public void onClick(View v){clearImported();}});
         }
 
@@ -174,7 +176,9 @@ public class NajmSettingsActivity extends Activity {
 
         if(s==7){
             content.addView(heading("حول Najm Space"));
-            content.addView(sub("Najm Space V1.2\nAndroid 4.4+\nواجهة سيارة + App Space + Runtime Engine"));
+            content.addView(sub("Najm Space V1.2
+Android 4.4+
+واجهة سيارة + App Space + Runtime Engine"));
             TextView note=txt("محرك تشغيل APK الافتراضي الكامل على Android 4.4.2 ما زال قيد التطوير. الخدمات التي يمكن تشغيلها داخليًا تعمل عبر Internal Runtime.",15,Color.rgb(205,215,230),false);
             content.addView(note);
         }
