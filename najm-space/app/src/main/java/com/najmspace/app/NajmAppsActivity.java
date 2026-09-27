@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -189,7 +190,10 @@ public class NajmAppsActivity extends Activity {
         icon.setTextSize(34);
         icon.setGravity(Gravity.CENTER);
         icon.setBackgroundColor(color);
-        tile.addView(icon,new LinearLayout.LayoutParams(dp(66),dp(66)));
+        LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(68),dp(68));
+        ilp.topMargin=dp(4);
+        tile.addView(icon,ilp);
+        addNameLabel(tile,name);
         tile.setOnClickListener(listener);
         addTile(tile);
     }
@@ -199,7 +203,10 @@ public class NajmAppsActivity extends Activity {
         ImageView icon=new ImageView(this);
         icon.setImageResource(R.mipmap.ic_launcher);
         icon.setPadding(dp(6),dp(6),dp(6),dp(6));
-        tile.addView(icon,new LinearLayout.LayoutParams(dp(66),dp(66)));
+        LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(68),dp(68));
+        ilp.topMargin=dp(4);
+        tile.addView(icon,ilp);
+        addNameLabel(tile,name);
 
         tile.setOnClickListener(new View.OnClickListener(){
             @Override public void onClick(View v){
@@ -240,21 +247,26 @@ public class NajmAppsActivity extends Activity {
             ImageView icon=new ImageView(this);
             icon.setImageDrawable(iconDrawable);
             icon.setPadding(dp(4),dp(4),dp(4),dp(4));
-            tile.addView(icon,new LinearLayout.LayoutParams(dp(66),dp(66)));
+            LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(68),dp(68));
+            ilp.topMargin=dp(4);
+            tile.addView(icon,ilp);
         }else{
             ImageView icon=new ImageView(this);
             icon.setImageResource(R.mipmap.ic_launcher);
             icon.setPadding(dp(6),dp(6),dp(6),dp(6));
-            tile.addView(icon,new LinearLayout.LayoutParams(dp(66),dp(66)));
+            LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(68),dp(68));
+            ilp.topMargin=dp(4);
+            tile.addView(icon,ilp);
         }
 
+        addNameLabel(tile,name);
         if(badge!=null && badge.length()>0){
             TextView state=new TextView(this);
             state.setText(badge);
             state.setTextColor(Color.rgb(110,200,255));
-            state.setTextSize(10);
+            state.setTextSize(9);
             state.setGravity(Gravity.CENTER);
-            tile.addView(state,new LinearLayout.LayoutParams(-1,dp(18)));
+            tile.addView(state,new LinearLayout.LayoutParams(-1,dp(16)));
         }
         return tile;
     }
@@ -263,26 +275,22 @@ public class NajmAppsActivity extends Activity {
         LinearLayout tile=new LinearLayout(this);
         tile.setOrientation(LinearLayout.VERTICAL);
         tile.setGravity(Gravity.CENTER_HORIZONTAL);
-        tile.setPadding(dp(7),dp(8),dp(7),dp(6));
-        tile.setBackgroundColor(Color.rgb(16,31,50));
+        tile.setPadding(dp(7),dp(6),dp(7),dp(6));
+
+        GradientDrawable bg=new GradientDrawable();
+        bg.setColor(Color.rgb(15,29,47));
+        bg.setCornerRadius(dp(20));
+        bg.setStroke(dp(1),Color.rgb(34,58,82));
+        tile.setBackground(bg);
+
         tile.setClickable(true);
         tile.setFocusable(true);
-
-        TextView label=new TextView(this);
-        label.setText(name);
-        label.setTextColor(Color.WHITE);
-        label.setTextSize(12);
-        label.setGravity(Gravity.CENTER);
-        label.setMaxLines(2);
-
-        tile.addView(label,new LinearLayout.LayoutParams(-1,dp(38)));
-
         tile.setOnTouchListener(new View.OnTouchListener(){
             @Override public boolean onTouch(View v,android.view.MotionEvent e){
                 if(e.getAction()==android.view.MotionEvent.ACTION_DOWN){
-                    v.animate().scaleX(.93f).scaleY(.93f).setDuration(60).start();
+                    v.animate().scaleX(.95f).scaleY(.95f).alpha(.86f).setDuration(55).start();
                 }else if(e.getAction()==android.view.MotionEvent.ACTION_UP || e.getAction()==android.view.MotionEvent.ACTION_CANCEL){
-                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                    v.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(95).start();
                 }
                 return false;
             }
@@ -290,10 +298,23 @@ public class NajmAppsActivity extends Activity {
         return tile;
     }
 
+    private void addNameLabel(LinearLayout tile,String name){
+        TextView label=new TextView(this);
+        label.setText(name);
+        label.setTextColor(Color.WHITE);
+        label.setTextSize(12);
+        label.setGravity(Gravity.CENTER);
+        label.setMaxLines(2);
+        label.setTypeface(Typeface.DEFAULT_BOLD);
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(34));
+        lp.topMargin=dp(5);
+        tile.addView(label,lp);
+    }
+
     private void addTile(View tile){
         GridLayout.LayoutParams lp=new GridLayout.LayoutParams();
         lp.width=0;
-        lp.height=dp(132);
+        lp.height=dp(138);
         lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);
         lp.setMargins(dp(5),dp(5),dp(5),dp(5));
         grid.addView(tile,lp);
