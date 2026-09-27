@@ -45,7 +45,7 @@ public class NajmAppsActivity extends Activity {
 
         LinearLayout root=new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(14),dp(10),dp(14),dp(8));
+        root.setPadding(dp(16),dp(12),dp(16),dp(10));
         root.setBackgroundColor(Color.rgb(8,16,29));
 
         LinearLayout top=new LinearLayout(this);
@@ -279,7 +279,7 @@ public class NajmAppsActivity extends Activity {
 
         GradientDrawable bg=new GradientDrawable();
         bg.setColor(Color.rgb(15,29,47));
-        bg.setCornerRadius(dp(20));
+        bg.setCornerRadius(dp(22));
         bg.setStroke(dp(1),Color.rgb(34,58,82));
         tile.setBackground(bg);
 
@@ -316,7 +316,7 @@ public class NajmAppsActivity extends Activity {
         lp.width=0;
         lp.height=dp(138);
         lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);
-        lp.setMargins(dp(5),dp(5),dp(5),dp(5));
+        lp.setMargins(dp(6),dp(6),dp(6),dp(6));
         grid.addView(tile,lp);
     }
 
