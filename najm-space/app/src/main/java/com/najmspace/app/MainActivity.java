@@ -166,18 +166,9 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         LinearLayout.LayoutParams cardsLp=new LinearLayout.LayoutParams(-1,0,1);
         center.addView(cards,cardsLp);
 
-        LinearLayout music=new LinearLayout(this);music.setOrientation(LinearLayout.VERTICAL);music.setPadding(dp(14),dp(12),dp(14),dp(12));
-        music.setBackground(card(Color.rgb(17,36,58),22,Color.argb(80,70,155,230)));
-        music.addView(label("الموسيقى",18,Color.WHITE,true));
-        music.addView(label("غير مشغل حاليًا",13,Color.rgb(180,200,225),false));
-        TextView controls=label("⏮     ▶     ⏭",24,Color.rgb(75,190,255),true);controls.setGravity(Gravity.CENTER);
-        music.addView(controls,new LinearLayout.LayoutParams(-1,0,1));
-        music.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMusic();}});
-        cards.addView(music,new LinearLayout.LayoutParams(0,-1,.72f));
-
         FrameLayout mapCard=new FrameLayout(this);
         mapCard.setBackground(card(Color.rgb(13,31,51),22,Color.argb(100,55,165,245)));
-        LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,2.15f);mlp.leftMargin=dp(10);cards.addView(mapCard,mlp);
+        LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,3.6f);mlp.leftMargin=dp(10);cards.addView(mapCard,mlp);
 
         homeMap=new HomeMapView(this);
         mapCard.addView(homeMap,new FrameLayout.LayoutParams(-1,-1));
@@ -224,26 +215,26 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         gpsBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){homeMap.showCurrentLocation();}});
 
         LinearLayout launchers=new LinearLayout(this);launchers.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.72f);llp.leftMargin=dp(10);cards.addView(launchers,llp);
-        TextView store=tile("✦","AppGallery",Color.rgb(178,45,48));
+        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.78f);llp.leftMargin=dp(10);cards.addView(launchers,llp);
+        TextView store=tile("✦","AppGallery",Color.rgb(178,45,48)); store.setTextSize(15);
         store.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             RuntimeRouter.openWeb(MainActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
         }});
         launchers.addView(store,new LinearLayout.LayoutParams(-1,0,1));
 
-        TextView files=tile("▤","الملفات",Color.rgb(47,116,145));
+        TextView files=tile("▤","الملفات",Color.rgb(47,116,145)); files.setTextSize(15);
         LinearLayout.LayoutParams flp=new LinearLayout.LayoutParams(-1,0,1);flp.topMargin=dp(6);launchers.addView(files,flp);
         files.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
         }});
 
-        TextView youtube=tile("▶","YouTube",Color.rgb(200,45,52));
+        TextView youtube=tile("▶","YouTube",Color.rgb(200,45,52)); youtube.setTextSize(15);
         LinearLayout.LayoutParams ylp=new LinearLayout.LayoutParams(-1,0,1);ylp.topMargin=dp(6);launchers.addView(youtube,ylp);
         youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             RuntimeRouter.openWeb(MainActivity.this,"YouTube","https://m.youtube.com");
         }});
 
-        TextView apps=tile("▦","التطبيقات",Color.rgb(46,97,170));
+        TextView apps=tile("▦","التطبيقات",Color.rgb(46,97,170)); apps.setTextSize(15);
         LinearLayout.LayoutParams alp=new LinearLayout.LayoutParams(-1,0,1);alp.topMargin=dp(6);launchers.addView(apps,alp);
         apps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             startActivity(new Intent(MainActivity.this,NajmAppsActivity.class));
@@ -261,9 +252,9 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 if(idx==3)RuntimeRouter.openWeb(MainActivity.this,"Najm Browser","https://www.google.com");
                 if(idx==4)startActivity(new Intent(MainActivity.this,NajmAppsActivity.class));
             }});
-            dock.addView(d,new LinearLayout.LayoutParams(0,dp(60),1));
+            dock.addView(d,new LinearLayout.LayoutParams(0,dp(52),1));
         }
-        LinearLayout.LayoutParams dlp=new LinearLayout.LayoutParams(-1,dp(66));dlp.topMargin=dp(10);center.addView(dock,dlp);
+        LinearLayout.LayoutParams dlp=new LinearLayout.LayoutParams(-1,dp(58));dlp.topMargin=dp(10);center.addView(dock,dlp);
 
         buildShade();
         pull.setOnTouchListener(new View.OnTouchListener(){
