@@ -1,6 +1,8 @@
 package com.najmspace.app;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.StatFs;
 import java.io.File;
@@ -8,19 +10,56 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 public final class NajmStorage {
+    public static final String AUTO="auto";
+    public static final String INTERNAL="internal";
+    public static final String EXTERNAL="external";
+    public static final String CUSTOM="custom";
+
     private NajmStorage(){}
 
+    private static SharedPreferences prefs(Context c){
+        return c.getSharedPreferences("najmspace",Context.MODE_PRIVATE);
+    }
+
+    public static void setMode(Context c,String mode){
+        prefs(c).edit().putString("storage_mode",mode).apply();
+    }
+
+    public static String getMode(Context c){
+        return prefs(c).getString("storage_mode",AUTO);
+    }
+
+    public static void setCustomTree(Context c,String uri){
+        prefs(c).edit().putString("storage_custom_uri",uri).putString("storage_mode",CUSTOM).apply();
+    }
+
+    public static String getCustomTree(Context c){
+        return prefs(c).getString("storage_custom_uri","");
+    }
+
     public static File base(Context c){
-        File ext=null;
-        try{ ext=c.getExternalFilesDir(null); }catch(Exception ignored){}
-        File base;
-        if(ext!=null && Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())){
-            base=new File(ext,"NajmSpace");
+        String mode=getMode(c);
+        File chosen=null;
+
+        if(INTERNAL.equals(mode)){
+            chosen=new File(c.getFilesDir(),"NajmSpace");
+        }else if(EXTERNAL.equals(mode)){
+            File ext=null;
+            try{ext=c.getExternalFilesDir(null);}catch(Exception ignored){}
+            if(ext!=null)chosen=new File(ext,"NajmSpace");
         }else{
-            base=new File(c.getFilesDir(),"NajmSpace");
+            File ext=null;
+            try{ext=c.getExternalFilesDir(null);}catch(Exception ignored){}
+            if(ext!=null && Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())){
+                chosen=new File(ext,"NajmSpace");
+            }else{
+                chosen=new File(c.getFilesDir(),"NajmSpace");
+            }
         }
-        if(!base.exists())base.mkdirs();
-        return base;
+
+        if(chosen==null)chosen=new File(c.getFilesDir(),"NajmSpace");
+        if(!chosen.exists())chosen.mkdirs();
+        return chosen;
     }
 
     public static File appsDir(Context c){
@@ -43,10 +82,18 @@ public final class NajmStorage {
         return d;
     }
 
+    public static String modeLabel(Context c){
+        String m=getMode(c);
+        if(INTERNAL.equals(m))return "الذاكرة الداخلية";
+        if(EXTERNAL.equals(m))return "الذاكرة الخارجية";
+        if(CUSTOM.equals(m))return "مجلد مخصص";
+        return "تلقائي";
+    }
+
     public static String locationLabel(Context c){
         File b=base(c);
         String p=b.getAbsolutePath();
-        return p.contains("/Android/data/") ? "مساحة التخزين الخارجية الخاصة بـ Najm Space" : "مساحة التخزين الداخلية";
+        return modeLabel(c)+" • "+(p.contains("/Android/data/")?"مساحة خارجية خاصة بـ Najm Space":"مساحة داخلية");
     }
 
     public static long freeBytes(Context c){
@@ -71,8 +118,7 @@ public final class NajmStorage {
         if(kb<1024)return String.format(java.util.Locale.US,"%.1f KB",kb);
         double mb=kb/1024.0;
         if(mb<1024)return String.format(java.util.Locale.US,"%.1f MB",mb);
-        double gb=mb/1024.0;
-        return String.format(java.util.Locale.US,"%.2f GB",gb);
+        return String.format(java.util.Locale.US,"%.2f GB",mb/1024.0);
     }
 
     private static void migrateLegacy(File old,File dest){
