@@ -361,12 +361,11 @@ public class MainActivity extends Activity implements LocationListener {
         if(shadeOpen){hideShade();return;}
         try{moveTaskToBack(true);}catch(Exception e){super.onBackPressed();}
     }
-    @Override protected void onResume(){super.onResume();handler.post(tick);}
-    @Override protected void onPause(){handler.removeCallbacks(tick);super.onPause();}
-    @Override protected void onDestroy(){try{if(locationManager!=null)locationManager.removeUpdates(this);}catch(Exception ignored){}super.onDestroy();}
     @Override protected void onResume(){
         super.onResume();
+        handler.post(tick);
         NajmRecentStore.touch(this,"home","الرئيسية","com.najmspace.app.MainActivity");
     }
-
+    @Override protected void onPause(){handler.removeCallbacks(tick);super.onPause();}
+    @Override protected void onDestroy(){try{if(locationManager!=null)locationManager.removeUpdates(this);}catch(Exception ignored){}super.onDestroy();}
 }
