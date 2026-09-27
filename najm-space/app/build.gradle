@@ -6,7 +6,7 @@ android {
         applicationId 'com.najmspace.app'
         minSdk 19
         targetSdk 28
-        versionCode 23
-        versionName '2.3'
+        versionCode 24
+        versionName '2.4'
     }
 }
