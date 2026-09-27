@@ -44,13 +44,13 @@ public class NajmAppsActivity extends Activity {
         root.addView(title);
 
         TextView desc=new TextView(this);
-        desc.setText("التطبيقات المستوردة هنا تحفظ داخل مساحة Najm Space الخاصة. محرك التشغيل الافتراضي الكامل قيد التطوير.");
+        desc.setText("التطبيقات والخدمات هنا تعمل من مساحة Najm Space. الخدمات المتوافقة تفتح داخل البرنامج نفسه، وملفات APK تبقى داخل مساحة Najm إلى أن يدعمها محرك الحاوية.");
         desc.setTextColor(Color.rgb(170,190,215));
         desc.setTextSize(14);
         desc.setPadding(0,6,0,10);
         root.addView(desc);
 
-        Button importBtn=new Button(this);
+        Button youtube=new Button(this); youtube.setText("▶ YouTube داخل Najm Space"); youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){Intent i=new Intent(NajmAppsActivity.this,InternalBrowserActivity.class);i.putExtra("url","https://m.youtube.com");i.putExtra("title","YouTube");startActivity(i);}}); root.addView(youtube,new LinearLayout.LayoutParams(-1,54));\n\n        Button browser=new Button(this); browser.setText("◎ المتصفح داخل Najm Space"); browser.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){Intent i=new Intent(NajmAppsActivity.this,InternalBrowserActivity.class);i.putExtra("url","https://www.google.com");i.putExtra("title","Najm Browser");startActivity(i);}}); LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,54);bp.topMargin=8;root.addView(browser,bp);\n\n        Button importBtn=new Button(this);
         importBtn.setText("+ استيراد APK إلى Najm Space");
         importBtn.setTextSize(17);
         root.addView(importBtn,new LinearLayout.LayoutParams(-1,54));
