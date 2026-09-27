@@ -42,6 +42,7 @@ public class RuntimeManagerActivity extends Activity {
         stats.setPadding(0,dp(16),0,dp(8));list.addView(stats);
         list.addView(txt("V1.0 يضيف أول محرك تطبيقات داخلي نملكه بالكامل. APK العشوائي ما زال يحتاج Legacy Container مستقل ومتوافق مع Android 4.4.",14,Color.rgb(185,200,220),false));
 
+        root.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,62));
         setContentView(root);
     }
 
