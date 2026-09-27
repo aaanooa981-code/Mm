@@ -1,14 +1,20 @@
 package com.najmspace.app;
 
+import android.Manifest;
 import android.app.Activity;
-import android.os.Bundle;
-import android.os.Handler;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -23,312 +29,273 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends Activity {
-    private TextView clock, date;
-    private FrameLayout shell, shade;
-    private LinearLayout root;
+public class MainActivity extends Activity implements LocationListener {
+    private TextView clock,date,gpsState,coords;
+    private SpeedometerView speedometer;
+    private FrameLayout shell,shade;
     private float downY;
-    private boolean shadeOpen = false;
-    private final Handler handler = new Handler();
+    private boolean shadeOpen=false;
+    private final Handler handler=new Handler();
+    private LocationManager locationManager;
+    private double lastLat=24.7136,lastLon=46.6753;
+    private static final int REQ_LOCATION=91;
 
-    private final Runnable tick = new Runnable() {
-        @Override public void run() {
-            Date now = new Date();
-            if (clock != null) clock.setText(new SimpleDateFormat("HH:mm", Locale.US).format(now));
-            if (date != null) date.setText(new SimpleDateFormat("EEE, dd MMM", Locale.US).format(now));
-            handler.postDelayed(this, 1000);
+    private final Runnable tick=new Runnable(){
+        @Override public void run(){
+            Date now=new Date();
+            if(clock!=null) clock.setText(new SimpleDateFormat("HH:mm",Locale.US).format(now));
+            if(date!=null) date.setText(new SimpleDateFormat("EEEE  yyyy/MM/dd",new Locale("ar")).format(now));
+            handler.postDelayed(this,1000);
         }
     };
 
-    private int dp(int v){ return (int)(v * getResources().getDisplayMetrics().density + .5f); }
+    private int dp(int v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
 
-    private GradientDrawable rounded(int color, int radius) {
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(color);
-        g.setCornerRadius(dp(radius));
+    private GradientDrawable card(int color,int radius,int strokeColor){
+        GradientDrawable g=new GradientDrawable();
+        g.setColor(color); g.setCornerRadius(dp(radius));
+        if(strokeColor!=0) g.setStroke(dp(1),strokeColor);
         return g;
     }
 
-    private TextView tile(String icon, String label, int color) {
-        TextView v = new TextView(this);
-        v.setText(icon + "\n" + label);
-        v.setGravity(Gravity.CENTER);
-        v.setTextColor(Color.WHITE);
-        v.setTextSize(16);
-        v.setTypeface(Typeface.DEFAULT_BOLD);
-        v.setPadding(dp(8), dp(10), dp(8), dp(10));
-        v.setBackground(rounded(color, 20));
-        v.setClickable(true);
-        v.setFocusable(true);
-        v.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View view, MotionEvent e) {
-                if (e.getAction() == MotionEvent.ACTION_DOWN) {
-                    view.animate().scaleX(.94f).scaleY(.94f).setDuration(80).start();
-                } else if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
-                    view.animate().scaleX(1f).scaleY(1f).setDuration(110).start();
-                }
+    private TextView label(String text,float size,int color,boolean bold){
+        TextView t=new TextView(this); t.setText(text); t.setTextSize(size); t.setTextColor(color);
+        if(bold)t.setTypeface(Typeface.DEFAULT_BOLD); return t;
+    }
+
+    private TextView tile(String icon,String title,int color){
+        TextView t=label(icon+"\n"+title,14,Color.WHITE,true);
+        t.setGravity(Gravity.CENTER); t.setPadding(dp(8),dp(8),dp(8),dp(8));
+        t.setBackground(card(color,18,Color.argb(70,120,185,255)));
+        t.setClickable(true); t.setFocusable(true);
+        t.setOnTouchListener(new View.OnTouchListener(){
+            @Override public boolean onTouch(View v,MotionEvent e){
+                if(e.getAction()==MotionEvent.ACTION_DOWN)v.animate().scaleX(.93f).scaleY(.93f).setDuration(70).start();
+                if(e.getAction()==MotionEvent.ACTION_UP||e.getAction()==MotionEvent.ACTION_CANCEL)v.animate().scaleX(1f).scaleY(1f).setDuration(120).start();
                 return false;
             }
         });
-        return v;
+        return t;
     }
 
-    private void open(Class<?> c){ startActivity(new Intent(this,c)); }
-
-    @Override public void onCreate(Bundle state) {
-        super.onCreate(state);
+    @Override public void onCreate(Bundle b){
+        super.onCreate(b);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        shell = new FrameLayout(this);
-        GradientDrawable bg = new GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            new int[]{Color.rgb(10,14,24), Color.rgb(29,42,64)}
-        );
-        shell.setBackground(bg);
+        shell=new FrameLayout(this);
+        shell.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(5,13,24),Color.rgb(12,27,47),Color.rgb(7,16,29)}));
 
-        root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(24), dp(14), dp(24), dp(16));
-        shell.addView(root, new FrameLayout.LayoutParams(-1,-1));
+        LinearLayout root=new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(14),dp(8),dp(14),dp(12));
+        shell.addView(root,new FrameLayout.LayoutParams(-1,-1));
 
-        // Swipe handle / top status strip
-        TextView pull = new TextView(this);
-        pull.setText("  ━━━   اسحب للأسفل لمركز التحكم   ━━━  ");
-        pull.setTextColor(Color.rgb(190,205,224));
-        pull.setTextSize(12);
+        TextView pull=label("━━━  اسحب للأسفل لمركز التحكم  ━━━",11,Color.rgb(170,195,220),false);
         pull.setGravity(Gravity.CENTER);
-        pull.setPadding(0, dp(3), 0, dp(6));
-        root.addView(pull, new LinearLayout.LayoutParams(-1, dp(30)));
+        root.addView(pull,new LinearLayout.LayoutParams(-1,dp(24)));
 
-        LinearLayout top = new LinearLayout(this);
-        top.setOrientation(LinearLayout.HORIZONTAL);
-        top.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout status=new LinearLayout(this); status.setGravity(Gravity.CENTER_VERTICAL);
+        TextView brand=label("✦  Najm Space",20,Color.WHITE,true);
+        status.addView(brand,new LinearLayout.LayoutParams(0,dp(38),1));
+        TextView indicators=label("⌂   BT   Wi‑Fi   GPS",13,Color.rgb(175,195,220),false);
+        indicators.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+        status.addView(indicators,new LinearLayout.LayoutParams(0,dp(38),1));
+        root.addView(status);
 
-        LinearLayout timeBox = new LinearLayout(this);
-        timeBox.setOrientation(LinearLayout.VERTICAL);
-        clock = new TextView(this);
-        clock.setTextColor(Color.WHITE);
-        clock.setTextSize(42);
-        clock.setTypeface(Typeface.DEFAULT_BOLD);
-        date = new TextView(this);
-        date.setTextColor(Color.rgb(170,185,205));
-        date.setTextSize(15);
-        timeBox.addView(clock);
-        timeBox.addView(date);
-        top.addView(timeBox, new LinearLayout.LayoutParams(0,-2,1));
+        LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.HORIZONTAL);
+        root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
 
-        TextView brand = new TextView(this);
-        brand.setText("NAJM SPACE");
-        brand.setTextColor(Color.WHITE);
-        brand.setTextSize(23);
-        brand.setTypeface(Typeface.DEFAULT_BOLD);
-        brand.setGravity(Gravity.RIGHT);
-        top.addView(brand,new LinearLayout.LayoutParams(0,-2,1));
-        root.addView(top);
+        // left: clock/weather/speed
+        LinearLayout left=new LinearLayout(this); left.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout timeWeather=new LinearLayout(this);
 
-        TextView sub = new TextView(this);
-        sub.setText("Smart Car Launcher  •  Compatibility Hub  •  Android 4.4+");
-        sub.setTextColor(Color.rgb(120,145,175));
-        sub.setTextSize(14);
-        sub.setPadding(0,0,0,dp(12));
-        root.addView(sub);
+        LinearLayout timeCard=new LinearLayout(this); timeCard.setOrientation(LinearLayout.VERTICAL); timeCard.setGravity(Gravity.CENTER);
+        timeCard.setBackground(card(Color.rgb(18,34,54),22,Color.argb(80,70,155,230)));
+        clock=label("--:--",40,Color.WHITE,true); date=label("",12,Color.rgb(180,200,225),false);
+        timeCard.addView(clock); timeCard.addView(date);
+        timeWeather.addView(timeCard,new LinearLayout.LayoutParams(0,dp(122),1));
 
-        LinearLayout middle = new LinearLayout(this);
-        middle.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout weather=new LinearLayout(this); weather.setOrientation(LinearLayout.VERTICAL); weather.setGravity(Gravity.CENTER);
+        weather.setBackground(card(Color.rgb(18,34,54),22,Color.argb(80,70,155,230)));
+        LinearLayout.LayoutParams wlp=new LinearLayout.LayoutParams(0,dp(122),.75f);wlp.leftMargin=dp(8);
+        weather.addView(label("☀  32°",26,Color.rgb(245,192,70),true));
+        weather.addView(label("مشمس",13,Color.WHITE,false));
+        weather.addView(label("الرياض",12,Color.rgb(180,200,225),false));
+        timeWeather.addView(weather,wlp);
+        left.addView(timeWeather);
 
-        LinearLayout hero = new LinearLayout(this);
-        hero.setOrientation(LinearLayout.VERTICAL);
-        hero.setPadding(dp(22),dp(18),dp(22),dp(18));
-        GradientDrawable heroBg = new GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            new int[]{Color.rgb(34,80,132),Color.rgb(25,40,69)}
-        );
-        heroBg.setCornerRadius(dp(24));
-        hero.setBackground(heroBg);
+        LinearLayout speedCard=new LinearLayout(this); speedCard.setOrientation(LinearLayout.VERTICAL);speedCard.setGravity(Gravity.CENTER);
+        speedCard.setBackground(card(Color.rgb(14,30,48),22,Color.argb(90,70,165,245)));
+        LinearLayout.LayoutParams slp=new LinearLayout.LayoutParams(-1,0,1);slp.topMargin=dp(8);
+        speedometer=new SpeedometerView(this);speedCard.addView(speedometer,new LinearLayout.LayoutParams(-1,0,1));
+        gpsState=label("GPS: جاري البحث...",12,Color.rgb(229,181,82),false);gpsState.setGravity(Gravity.CENTER);
+        speedCard.addView(gpsState,new LinearLayout.LayoutParams(-1,dp(24)));
+        left.addView(speedCard,slp);
 
-        TextView heroTitle = new TextView(this);
-        heroTitle.setText("Drive smarter");
-        heroTitle.setTextColor(Color.WHITE);
-        heroTitle.setTextSize(28);
-        heroTitle.setTypeface(Typeface.DEFAULT_BOLD);
-        hero.addView(heroTitle);
+        body.addView(left,new LinearLayout.LayoutParams(0,-1,1.05f));
 
-        TextView heroText = new TextView(this);
-        heroText.setText("Your apps, media and controls in one lightweight interface.");
-        heroText.setTextColor(Color.rgb(215,228,243));
-        heroText.setTextSize(15);
-        hero.addView(heroText);
+        // center-right: hero, music, map, apps
+        LinearLayout center=new LinearLayout(this);center.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams clp=new LinearLayout.LayoutParams(0,-1,2.4f);clp.leftMargin=dp(10);body.addView(center,clp);
 
-        TextView youtube = tile("▶","YouTube",Color.rgb(190,46,46));
-        youtube.setOnClickListener(v -> open(CompatibilityActivity.class));
-        LinearLayout.LayoutParams yt = new LinearLayout.LayoutParams(-1,dp(80));
-        yt.topMargin = dp(14);
-        hero.addView(youtube,yt);
+        LinearLayout hero=new LinearLayout(this);hero.setOrientation(LinearLayout.VERTICAL);hero.setPadding(dp(18),dp(12),dp(18),dp(12));
+        hero.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(24,70,120),Color.rgb(16,34,61)}));
+        hero.addView(label("Drive smarter",27,Color.WHITE,true));
+        hero.addView(label("Premium home • GPS speed • Maps • Apps",13,Color.rgb(205,225,245),false));
+        center.addView(hero,new LinearLayout.LayoutParams(-1,dp(76)));
 
-        LinearLayout.LayoutParams heroLp = new LinearLayout.LayoutParams(0,dp(220),1.2f);
-        heroLp.rightMargin=dp(12);
-        middle.addView(hero,heroLp);
+        LinearLayout cards=new LinearLayout(this);
+        LinearLayout.LayoutParams cardsLp=new LinearLayout.LayoutParams(-1,0,1);cardsLp.topMargin=dp(8);center.addView(cards,cardsLp);
 
-        LinearLayout quick = new LinearLayout(this);
-        quick.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout music=new LinearLayout(this);music.setOrientation(LinearLayout.VERTICAL);music.setPadding(dp(14),dp(12),dp(14),dp(12));
+        music.setBackground(card(Color.rgb(17,36,58),22,Color.argb(80,70,155,230)));
+        music.addView(label("الموسيقى",18,Color.WHITE,true));
+        music.addView(label("غير مشغل حاليًا",13,Color.rgb(180,200,225),false));
+        TextView controls=label("⏮     ▶     ⏭",24,Color.rgb(75,190,255),true);controls.setGravity(Gravity.CENTER);
+        music.addView(controls,new LinearLayout.LayoutParams(-1,0,1));
+        music.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMusic();}});
+        cards.addView(music,new LinearLayout.LayoutParams(0,-1,1));
 
-        LinearLayout q1 = new LinearLayout(this);
-        TextView apps = tile("◉","Apps",Color.rgb(45,93,148));
-        apps.setOnClickListener(v -> open(AppsActivity.class));
-        TextView control = tile("☰","Control",Color.rgb(57,73,96));
-        control.setOnClickListener(v -> showShade());
-        q1.addView(apps,new LinearLayout.LayoutParams(0,dp(100),1));
-        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0,dp(100),1);
-        cp.leftMargin=dp(10);
-        q1.addView(control,cp);
+        LinearLayout mapCard=new LinearLayout(this);mapCard.setOrientation(LinearLayout.VERTICAL);mapCard.setPadding(dp(10),dp(10),dp(10),dp(8));
+        mapCard.setBackground(card(Color.rgb(13,31,51),22,Color.argb(100,55,165,245)));
+        LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,1.25f);mlp.leftMargin=dp(8);cards.addView(mapCard,mlp);
+        TextView mapTitle=label("الخريطة",17,Color.WHITE,true);mapCard.addView(mapTitle,new LinearLayout.LayoutParams(-1,dp(24)));
+        MapPreviewView map=new MapPreviewView(this);mapCard.addView(map,new LinearLayout.LayoutParams(-1,0,1));
+        coords=label("اضغط لفتح الملاحة",11,Color.rgb(175,195,220),false);coords.setGravity(Gravity.CENTER);
+        mapCard.addView(coords,new LinearLayout.LayoutParams(-1,dp(22)));
+        mapCard.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMap();}});
 
-        LinearLayout q2 = new LinearLayout(this);
-        TextView browser = tile("◎","Browser",Color.rgb(42,117,94));
-        browser.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"))));
-        TextView settings = tile("⚙","Settings",Color.rgb(98,82,133));
-        settings.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, NajmSettingsActivity.class)));
-        q2.addView(browser,new LinearLayout.LayoutParams(0,dp(100),1));
-        LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(0,dp(100),1);
-        sp.leftMargin=dp(10);
-        q2.addView(settings,sp);
+        LinearLayout launchers=new LinearLayout(this);launchers.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.68f);llp.leftMargin=dp(8);cards.addView(launchers,llp);
+        TextView youtube=tile("▶","YouTube",Color.rgb(200,45,52));
+        youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(MainActivity.this,CompatibilityActivity.class));}});
+        launchers.addView(youtube,new LinearLayout.LayoutParams(-1,0,1));
+        TextView apps=tile("▦","التطبيقات",Color.rgb(46,97,170));
+        LinearLayout.LayoutParams alp=new LinearLayout.LayoutParams(-1,0,1);alp.topMargin=dp(8);launchers.addView(apps,alp);
+        apps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(MainActivity.this,AppsActivity.class));}});
 
-        quick.addView(q1);
-        LinearLayout.LayoutParams q2p = new LinearLayout.LayoutParams(-1,-2);
-        q2p.topMargin=dp(10);
-        quick.addView(q2,q2p);
-
-        middle.addView(quick,new LinearLayout.LayoutParams(0,dp(220),1));
-        root.addView(middle,new LinearLayout.LayoutParams(-1,0,1));
-
-        LinearLayout dock = new LinearLayout(this);
-        dock.setOrientation(LinearLayout.HORIZONTAL);
-        dock.setPadding(dp(8),dp(7),dp(8),dp(7));
-        dock.setBackground(rounded(Color.argb(200,24,31,44),24));
-
-        TextView home=tile("⌂","Home",Color.rgb(43,54,72));
-        TextView all=tile("◉","Apps",Color.rgb(43,54,72));
-        TextView media=tile("▶","Media",Color.rgb(43,54,72));
-        TextView ctrl=tile("☰","Control",Color.rgb(43,54,72));
-        all.setOnClickListener(v->open(AppsActivity.class));
-        media.setOnClickListener(v->open(CompatibilityActivity.class));
-        ctrl.setOnClickListener(v->showShade());
-        dock.addView(home,new LinearLayout.LayoutParams(0,dp(66),1));
-        dock.addView(all,new LinearLayout.LayoutParams(0,dp(66),1));
-        dock.addView(media,new LinearLayout.LayoutParams(0,dp(66),1));
-        dock.addView(ctrl,new LinearLayout.LayoutParams(0,dp(66),1));
-        root.addView(dock);
+        LinearLayout dock=new LinearLayout(this);dock.setPadding(dp(6),dp(5),dp(6),dp(5));
+        dock.setBackground(card(Color.argb(225,15,24,38),24,Color.argb(70,100,165,230)));
+        String[] di={"⚙\nالإعدادات","♫\nالموسيقى","▶\nYouTube","◎\nBrowser","▦\nApps"};
+        for(int i=0;i<di.length;i++){
+            final int idx=i;TextView d=tile("",di[i],Color.rgb(31,48,70));d.setText(di[i]);d.setTextSize(12);
+            d.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+                if(idx==0)startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
+                if(idx==1)openMusic();
+                if(idx==2)startActivity(new Intent(MainActivity.this,CompatibilityActivity.class));
+                if(idx==3)startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com")));
+                if(idx==4)startActivity(new Intent(MainActivity.this,AppsActivity.class));
+            }});
+            dock.addView(d,new LinearLayout.LayoutParams(0,dp(60),1));
+        }
+        LinearLayout.LayoutParams dlp=new LinearLayout.LayoutParams(-1,dp(64));dlp.topMargin=dp(8);center.addView(dock,dlp);
 
         buildShade();
-
-        View.OnTouchListener swipe = new View.OnTouchListener() {
-            @Override public boolean onTouch(View v, MotionEvent e) {
-                if (e.getAction()==MotionEvent.ACTION_DOWN) {
-                    downY=e.getRawY();
-                    return true;
-                }
-                if (e.getAction()==MotionEvent.ACTION_UP) {
-                    float dy=e.getRawY()-downY;
-                    if(dy>dp(65)) showShade();
-                    else if(dy<-dp(65)) hideShade();
-                    return true;
-                }
+        pull.setOnTouchListener(new View.OnTouchListener(){
+            @Override public boolean onTouch(View v,MotionEvent e){
+                if(e.getAction()==MotionEvent.ACTION_DOWN){downY=e.getRawY();return true;}
+                if(e.getAction()==MotionEvent.ACTION_UP){if(e.getRawY()-downY>dp(55))showShade();return true;}
                 return true;
             }
-        };
-        pull.setOnTouchListener(swipe);
+        });
 
         setContentView(shell);
+        animateIn(root);
+        requestLocation();
     }
 
-    private void buildShade() {
-        shade = new FrameLayout(this);
-        shade.setBackgroundColor(Color.argb(145,0,0,0));
-        shade.setVisibility(View.GONE);
+    private void animateIn(View v){
+        v.setAlpha(0f);v.setTranslationY(dp(22));
+        v.animate().alpha(1f).translationY(0).setDuration(420).start();
+    }
 
-        LinearLayout panel = new LinearLayout(this);
-        panel.setOrientation(LinearLayout.VERTICAL);
-        panel.setPadding(dp(24),dp(16),dp(24),dp(18));
-        panel.setBackground(rounded(Color.rgb(30,38,52),26));
+    private void requestLocation(){
+        if(Build.VERSION.SDK_INT>=23 && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);
+        }else startLocation();
+    }
 
-        TextView head = new TextView(this);
-        head.setText("مركز التحكم السريع     NAJM SPACE");
-        head.setTextColor(Color.WHITE);
-        head.setTextSize(21);
-        head.setTypeface(Typeface.DEFAULT_BOLD);
-        head.setGravity(Gravity.RIGHT);
-        panel.addView(head);
+    @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){
+        super.onRequestPermissionsResult(r,p,g);
+        if(r==REQ_LOCATION && g.length>0 && g[0]==PackageManager.PERMISSION_GRANTED)startLocation();
+        else gpsState.setText("GPS: صلاحية الموقع غير مفعلة");
+    }
 
-        LinearLayout row = new LinearLayout(this);
-        row.setPadding(0,dp(12),0,dp(12));
+    private void startLocation(){
+        try{
+            locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
+            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                gpsState.setText("GPS: متصل"); locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,900,1f,this);
+            }else if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+                gpsState.setText("GPS: شبكة"); locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1800,8f,this);
+            }else gpsState.setText("GPS: غير مفعّل");
+        }catch(Exception e){gpsState.setText("GPS: غير متاح");}
+    }
 
-        TextView wifi=tile("⌁","Wi-Fi",Color.rgb(42,103,160));
-        wifi.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)));
-        TextView bt=tile("ᛒ","Bluetooth",Color.rgb(49,88,145));
-        bt.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)));
-        TextView display=tile("☀","Display",Color.rgb(143,104,42));
-        display.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_DISPLAY_SETTINGS)));
-        TextView settings=tile("⚙","Settings",Color.rgb(93,76,128));
-        settings.setOnClickListener(v->startActivity(new Intent(MainActivity.this, NajmSettingsActivity.class)));
+    @Override public void onLocationChanged(Location l){
+        if(l==null)return;
+        lastLat=l.getLatitude();lastLon=l.getLongitude();
+        float kmh=l.hasSpeed()?l.getSpeed()*3.6f:0f;
+        speedometer.setSpeed(kmh);
+        gpsState.setText("GPS: "+(l.getProvider()==null?"متصل":l.getProvider()));
+        coords.setText(String.format(Locale.US,"%.4f , %.4f",lastLat,lastLon));
+    }
+    @Override public void onProviderDisabled(String p){gpsState.setText("GPS: متوقف");}
+    @Override public void onProviderEnabled(String p){gpsState.setText("GPS: متصل");}
+    @Override public void onStatusChanged(String p,int s,Bundle e){}
 
-        row.addView(wifi,new LinearLayout.LayoutParams(0,dp(82),1));
-        row.addView(bt,new LinearLayout.LayoutParams(0,dp(82),1));
-        row.addView(display,new LinearLayout.LayoutParams(0,dp(82),1));
-        row.addView(settings,new LinearLayout.LayoutParams(0,dp(82),1));
-        panel.addView(row);
+    private void openMap(){
+        Uri geo=Uri.parse("geo:"+lastLat+","+lastLon+"?q="+lastLat+","+lastLon);
+        Intent i=new Intent(Intent.ACTION_VIEW,geo);
+        try{startActivity(i);}catch(Exception e){startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://maps.google.com/?q="+lastLat+","+lastLon)));}
+    }
 
-        TextView brightLabel = new TextView(this);
-        brightLabel.setText("السطوع");
-        brightLabel.setTextColor(Color.WHITE);
-        brightLabel.setTextSize(15);
-        panel.addView(brightLabel);
+    private void openMusic(){
+        String[] pkgs={"com.google.android.music","com.spotify.music","com.android.music"};
+        for(String p:pkgs){Intent i=getPackageManager().getLaunchIntentForPackage(p);if(i!=null){startActivity(i);return;}}
+    }
 
-        SeekBar bright = new SeekBar(this);
-        bright.setMax(100);
-        bright.setProgress(70);
+    private void buildShade(){
+        shade=new FrameLayout(this);shade.setBackgroundColor(Color.argb(145,0,0,0));shade.setVisibility(View.GONE);
+        LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(18),dp(14),dp(18),dp(14));
+        panel.setBackground(card(Color.rgb(25,35,50),24,Color.argb(100,75,165,245)));
+        panel.addView(label("مركز التحكم السريع",21,Color.WHITE,true));
+
+        LinearLayout row=new LinearLayout(this);
+        String[] titles={"Wi‑Fi","Bluetooth","الشاشة","الإعدادات"};
+        int[] colors={Color.rgb(42,103,160),Color.rgb(49,88,145),Color.rgb(155,110,40),Color.rgb(92,76,130)};
+        for(int i=0;i<4;i++){
+            final int idx=i;TextView t=tile(i==0?"⌁":i==1?"ᛒ":i==2?"☀":"⚙",titles[i],colors[i]);
+            t.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+                if(idx==0)startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                if(idx==1)startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+                if(idx==2)startActivity(new Intent(Settings.ACTION_DISPLAY_SETTINGS));
+                if(idx==3)startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
+            }});
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(74),1);if(i>0)lp.leftMargin=dp(7);row.addView(t,lp);
+        }
+        LinearLayout.LayoutParams rlp=new LinearLayout.LayoutParams(-1,dp(78));rlp.topMargin=dp(10);panel.addView(row,rlp);
+
+        TextView bl=label("السطوع",13,Color.WHITE,false);panel.addView(bl);
+        SeekBar bright=new SeekBar(this);bright.setMax(100);bright.setProgress(70);
         bright.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
-            public void onProgressChanged(SeekBar s,int p,boolean fromUser){
-                WindowManager.LayoutParams lp=getWindow().getAttributes();
-                lp.screenBrightness=Math.max(.05f,p/100f);
-                getWindow().setAttributes(lp);
-            }
-            public void onStartTrackingTouch(SeekBar s){}
-            public void onStopTrackingTouch(SeekBar s){}
-        });
-        panel.addView(bright);
+            public void onProgressChanged(SeekBar s,int p,boolean f){WindowManager.LayoutParams lp=getWindow().getAttributes();lp.screenBrightness=Math.max(.05f,p/100f);getWindow().setAttributes(lp);}
+            public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}
+        });panel.addView(bright);
 
-        TextView volLabel = new TextView(this);
-        volLabel.setText("الصوت");
-        volLabel.setTextColor(Color.WHITE);
-        volLabel.setTextSize(15);
-        panel.addView(volLabel);
-
+        TextView vl=label("الصوت",13,Color.WHITE,false);panel.addView(vl);
         final AudioManager audio=(AudioManager)getSystemService(AUDIO_SERVICE);
-        SeekBar volume = new SeekBar(this);
-        int max=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        volume.setMax(max);
-        volume.setProgress(audio.getStreamVolume(AudioManager.STREAM_MUSIC));
-        volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
-            public void onProgressChanged(SeekBar s,int p,boolean fromUser){
-                if(fromUser) audio.setStreamVolume(AudioManager.STREAM_MUSIC,p,0);
-            }
-            public void onStartTrackingTouch(SeekBar s){}
-            public void onStopTrackingTouch(SeekBar s){}
-        });
-        panel.addView(volume);
+        SeekBar vol=new SeekBar(this);vol.setMax(audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC));vol.setProgress(audio.getStreamVolume(AudioManager.STREAM_MUSIC));
+        vol.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            public void onProgressChanged(SeekBar s,int p,boolean f){if(f)audio.setStreamVolume(AudioManager.STREAM_MUSIC,p,0);}
+            public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}
+        });panel.addView(vol);
 
-        FrameLayout.LayoutParams pp = new FrameLayout.LayoutParams(-1,dp(300));
-        pp.gravity=Gravity.TOP;
-        pp.leftMargin=dp(16); pp.rightMargin=dp(16); pp.topMargin=dp(8);
-        shade.addView(panel,pp);
-
+        FrameLayout.LayoutParams pp=new FrameLayout.LayoutParams(-1,dp(272));pp.gravity=Gravity.TOP;pp.leftMargin=dp(12);pp.rightMargin=dp(12);pp.topMargin=dp(5);shade.addView(panel,pp);
         shade.setOnTouchListener(new View.OnTouchListener(){
-            public boolean onTouch(View v, MotionEvent e){
-                if(e.getAction()==MotionEvent.ACTION_DOWN){ downY=e.getRawY(); return true; }
-                if(e.getAction()==MotionEvent.ACTION_UP){
-                    if(e.getRawY()-downY < -dp(50)) hideShade();
-                    return true;
-                }
+            @Override public boolean onTouch(View v,MotionEvent e){
+                if(e.getAction()==MotionEvent.ACTION_DOWN){downY=e.getRawY();return true;}
+                if(e.getAction()==MotionEvent.ACTION_UP){if(e.getRawY()-downY<-dp(45))hideShade();return true;}
                 return true;
             }
         });
@@ -336,25 +303,15 @@ public class MainActivity extends Activity {
     }
 
     private void showShade(){
-        if(shadeOpen) return;
-        shadeOpen=true;
-        shade.setVisibility(View.VISIBLE);
-        shade.setTranslationY(-dp(310));
-        shade.setAlpha(0f);
-        shade.animate().translationY(0).alpha(1f).setDuration(280).start();
+        if(shadeOpen)return;shadeOpen=true;shade.setVisibility(View.VISIBLE);shade.setTranslationY(-dp(290));shade.setAlpha(0f);
+        shade.animate().translationY(0).alpha(1f).setDuration(250).start();
     }
-
     private void hideShade(){
-        if(!shadeOpen) return;
-        shadeOpen=false;
-        shade.animate().translationY(-dp(310)).alpha(0f).setDuration(230)
-            .withEndAction(new Runnable(){ public void run(){ shade.setVisibility(View.GONE); } }).start();
+        if(!shadeOpen)return;shadeOpen=false;shade.animate().translationY(-dp(290)).alpha(0f).setDuration(200).withEndAction(new Runnable(){@Override public void run(){shade.setVisibility(View.GONE);}}).start();
     }
 
-    @Override public void onBackPressed(){
-        if(shadeOpen) hideShade(); else super.onBackPressed();
-    }
-
-    @Override protected void onResume(){ super.onResume(); handler.post(tick); }
-    @Override protected void onPause(){ handler.removeCallbacks(tick); super.onPause(); }
+    @Override public void onBackPressed(){if(shadeOpen)hideShade();else super.onBackPressed();}
+    @Override protected void onResume(){super.onResume();handler.post(tick);}
+    @Override protected void onPause(){handler.removeCallbacks(tick);super.onPause();}
+    @Override protected void onDestroy(){try{if(locationManager!=null)locationManager.removeUpdates(this);}catch(Exception ignored){}super.onDestroy();}
 }
