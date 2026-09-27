@@ -158,7 +158,11 @@ public class NajmSettingsActivity extends Activity {
 
         if(s==5){
             content.addView(heading("التخزين"));
-            content.addView(sub("ملفات APK المستوردة تحفظ داخل مساحة التطبيق الخاصة."));
+            content.addView(sub("Najm Space يستخدم مساحة التخزين الخارجية الخاصة بالتطبيق تلقائيًا عند توفرها."));
+            TextView storageInfo=txt(NajmStorage.locationLabel(this)+"\nالمتاح: "+NajmStorage.format(NajmStorage.freeBytes(this))+" من "+NajmStorage.format(NajmStorage.totalBytes(this))+"\n"+NajmStorage.base(this).getAbsolutePath(),15,Color.rgb(205,220,238),false);
+            storageInfo.setPadding(dp(12),dp(10),dp(12),dp(14));
+            storageInfo.setBackgroundColor(Color.rgb(15,33,54));
+            content.addView(storageInfo);
             action("فتح التطبيقات المحفوظة",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmAppsActivity.class));}});
             action("مدير الملفات / USB",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmFileManagerActivity.class));}});
             action("مسح التطبيقات المستوردة",new View.OnClickListener(){@Override public void onClick(View v){clearImported();}});
@@ -175,16 +179,18 @@ public class NajmSettingsActivity extends Activity {
 
         if(s==7){
             content.addView(heading("حول Najm Space"));
-            content.addView(sub("Najm Space V1.2\\nAndroid 4.4+\\nواجهة سيارة + App Space + Runtime Engine"));
+            content.addView(sub("Najm Space V1.3\\nAndroid 4.4+\\nواجهة سيارة + App Space + Runtime Engine"));
             TextView note=txt("محرك تشغيل APK الافتراضي الكامل على Android 4.4.2 ما زال قيد التطوير. الخدمات التي يمكن تشغيلها داخليًا تعمل عبر Internal Runtime.",15,Color.rgb(205,215,230),false);
             content.addView(note);
         }
 
-        content.setAlpha(0f);content.animate().alpha(1f).setDuration(180).start();
+        content.setAlpha(0f);
+        content.setTranslationX(dp(18));
+        content.animate().alpha(1f).translationX(0f).setDuration(150).start();
     }
 
     private void clearImported(){
-        java.io.File d=new java.io.File(getFilesDir(),"najm_apps");
+        java.io.File d=NajmStorage.appsDir(this);
         java.io.File[] fs=d.listFiles();
         if(fs!=null)for(java.io.File f:fs)f.delete();
     }
