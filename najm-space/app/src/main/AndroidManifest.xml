@@ -1,18 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
-    <application android:allowBackup="true" android:label="Najm Space" android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+    <application android:allowBackup="true" android:label="Najm Space" android:icon="@mipmap/ic_launcher" android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
         <activity android:name=".AppsActivity" android:screenOrientation="landscape"/>
-        <activity android:name=".ControlCenterActivity" android:screenOrientation="landscape"/>\n        <activity android:name=".NajmSettingsActivity" android:screenOrientation="landscape"/>
+        <activity android:name=".ControlCenterActivity" android:screenOrientation="landscape"/>
+        <activity android:name=".NajmSettingsActivity" android:screenOrientation="landscape"/>
         <activity android:name=".CompatibilityActivity" android:screenOrientation="landscape"/>
+        <activity android:name=".SplashActivity" android:exported="true" android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.HOME"/>
                 <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
     </application>
