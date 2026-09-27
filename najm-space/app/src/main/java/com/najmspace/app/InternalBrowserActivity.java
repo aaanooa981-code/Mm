@@ -1,11 +1,15 @@
 package com.najmspace.app;
 
 import android.app.Activity;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.webkit.WebChromeClient;
+import android.webkit.PermissionRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -83,6 +87,17 @@ public class InternalBrowserActivity extends Activity {
             @Override public void onProgressChanged(WebView view,int newProgress){
                 progress.setProgress(newProgress);
                 progress.setVisibility(newProgress>=100?View.GONE:View.VISIBLE);
+            }
+
+            @Override public void onPermissionRequest(final PermissionRequest request){
+                if(Build.VERSION.SDK_INT<21){ return; }
+                boolean mic=true, camera=true;
+                if(Build.VERSION.SDK_INT>=23){
+                    mic=checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED;
+                    camera=checkSelfPermission(Manifest.permission.CAMERA)==PackageManager.PERMISSION_GRANTED;
+                }
+                if(mic && camera) request.grant(request.getResources());
+                else request.deny();
             }
         });
 
