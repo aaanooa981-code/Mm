@@ -50,9 +50,13 @@ public class NajmAppsActivity extends Activity {
         desc.setPadding(0,6,0,10);
         root.addView(desc);
 
-        Button youtube=new Button(this); youtube.setText("▶ YouTube داخل Najm Space"); youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){Intent i=new Intent(NajmAppsActivity.this,InternalBrowserActivity.class);i.putExtra("url","https://m.youtube.com");i.putExtra("title","YouTube");startActivity(i);}}); root.addView(youtube,new LinearLayout.LayoutParams(-1,54));
+        Button youtube=new Button(this); youtube.setText("▶ YouTube داخل Najm Space"); youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"YouTube","https://m.youtube.com");}}); root.addView(youtube,new LinearLayout.LayoutParams(-1,54));
 
-        Button browser=new Button(this); browser.setText("◎ المتصفح داخل Najm Space"); browser.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){Intent i=new Intent(NajmAppsActivity.this,InternalBrowserActivity.class);i.putExtra("url","https://www.google.com");i.putExtra("title","Najm Browser");startActivity(i);}}); LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,54);bp.topMargin=8;root.addView(browser,bp);
+        Button browser=new Button(this); browser.setText("◎ المتصفح داخل Najm Space"); browser.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"Najm Browser","https://www.google.com");}}); LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,54);bp.topMargin=8;root.addView(browser,bp);
+
+        Button maps=new Button(this); maps.setText("⌖ الخرائط داخل Najm Space"); maps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"Najm Maps","https://www.openstreetmap.org");}}); LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(-1,54);mp.topMargin=8;root.addView(maps,mp);
+
+        Button runtime=new Button(this); runtime.setText("⚙ حالة محرك التشغيل"); runtime.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openRuntimeManager(NajmAppsActivity.this);}}); LinearLayout.LayoutParams rp0=new LinearLayout.LayoutParams(-1,54);rp0.topMargin=8;root.addView(runtime,rp0);
 
         Button importBtn=new Button(this);
         importBtn.setText("+ استيراد APK إلى Najm Space");
@@ -161,6 +165,8 @@ public class NajmAppsActivity extends Activity {
 
             Button remove=new Button(this);remove.setText("حذف");
             remove.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){f.delete();refresh();}});
+            TextView mode=new TextView(this); mode.setText("Legacy Container"); mode.setTextColor(Color.rgb(235,185,80)); mode.setTextSize(12); mode.setGravity(Gravity.CENTER); row.addView(mode,new LinearLayout.LayoutParams(130,48));
+
             row.addView(remove,new LinearLayout.LayoutParams(90,48));
 
             LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.bottomMargin=8;
