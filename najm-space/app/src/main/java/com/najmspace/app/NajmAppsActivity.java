@@ -99,6 +99,7 @@ public class NajmAppsActivity extends Activity {
         scroll.addView(list,new ScrollView.LayoutParams(-1,-2));
         LinearLayout.LayoutParams slp=new LinearLayout.LayoutParams(-1,0,1);slp.topMargin=10;
         root.addView(scroll,slp);
+        root.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,62));
 
         setContentView(root);
         refresh();
