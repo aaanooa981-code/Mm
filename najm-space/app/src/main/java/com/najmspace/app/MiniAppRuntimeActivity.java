@@ -86,4 +86,9 @@ public class MiniAppRuntimeActivity extends Activity {
         if(web!=null){web.stopLoading();web.destroy();}
         super.onDestroy();
     }
+    @Override protected void onResume(){
+        super.onResume();
+        NajmRecentStore.touch(this,"mini","Mini App","com.najmspace.app.MiniAppRuntimeActivity");
+    }
+
 }
