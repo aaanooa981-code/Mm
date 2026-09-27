@@ -3,6 +3,7 @@ package com.najmspace.app;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.SystemClock;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -36,6 +37,17 @@ public class HomeMapView extends WebView {
         if(now-lastLoad>10000 && (dLat>.00020 || dLon>.00020)){
             loadMap(lat,lon,false);
         }
+    }
+
+    public void search(String query){
+        if(query==null)return;
+        query=query.trim();
+        if(query.length()==0)return;
+        loadUrl("https://www.openstreetmap.org/search?query="+Uri.encode(query));
+    }
+
+    public void showCurrentLocation(){
+        loadMap(lat,lon,true);
     }
 
     private void loadMap(double la,double lo,boolean force){
