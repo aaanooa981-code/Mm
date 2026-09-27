@@ -41,17 +41,22 @@ public class NajmAppsActivity extends Activity {
         root.setBackgroundColor(Color.rgb(8,16,29));
 
         TextView title=new TextView(this);
-        title.setText("NAJM APP SPACE  V1.3");
+        title.setText("NAJM APP SPACE  V1.4");
         title.setTextColor(Color.WHITE);
         title.setTextSize(25);
         title.setTypeface(Typeface.DEFAULT_BOLD);
         root.addView(title);
 
         TextView desc=new TextView(this);
-        desc.setText("Mini Apps تعمل داخل Najm Space مباشرة. ملفات APK العادية تبقى في مساحة Najm إلى أن يكتمل Legacy Container.");
-        desc.setTextColor(Color.rgb(170,190,215));
+        desc.setText("ⓘ  تلميح");
+        desc.setTextColor(Color.rgb(105,190,255));
         desc.setTextSize(14);
         desc.setPadding(0,6,0,10);
+        desc.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(View v){
+                NajmHints.show(NajmAppsActivity.this,"app_space","تلميح","Mini Apps تعمل داخل Najm Space مباشرة. ملفات APK العادية تحفظ في مساحة Najm إلى أن يكتمل Legacy Container.");
+            }
+        });
         root.addView(desc);
 
         Button youtube=new Button(this);
