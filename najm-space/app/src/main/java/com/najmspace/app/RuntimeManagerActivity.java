@@ -58,4 +58,9 @@ public class RuntimeManagerActivity extends Activity {
     private TextView txt(String s,float size,int color,boolean bold){
         TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);if(bold)t.setTypeface(Typeface.DEFAULT_BOLD);return t;
     }
+    @Override protected void onResume(){
+        super.onResume();
+        NajmRecentStore.touch(this,"runtime","Runtime Engine","com.najmspace.app.RuntimeManagerActivity");
+    }
+
 }
