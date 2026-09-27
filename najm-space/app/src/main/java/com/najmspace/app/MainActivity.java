@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -155,8 +156,39 @@ public class MainActivity extends Activity implements LocationListener {
         LinearLayout mapCard=new LinearLayout(this);mapCard.setOrientation(LinearLayout.VERTICAL);mapCard.setPadding(dp(10),dp(10),dp(10),dp(8));
         mapCard.setBackground(card(Color.rgb(13,31,51),22,Color.argb(100,55,165,245)));
         LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,2.15f);mlp.leftMargin=dp(8);cards.addView(mapCard,mlp);
-        TextView mapTitle=label("الخريطة",17,Color.WHITE,true);mapCard.addView(mapTitle,new LinearLayout.LayoutParams(-1,dp(24)));
+        LinearLayout mapTop=new LinearLayout(this);
+        mapTop.setOrientation(LinearLayout.HORIZONTAL);
+        mapTop.setGravity(Gravity.CENTER_VERTICAL);
+
+        final EditText mapSearch=new EditText(this);
+        mapSearch.setSingleLine(true);
+        mapSearch.setHint("ابحث عن مكان...");
+        mapSearch.setTextColor(Color.WHITE);
+        mapSearch.setHintTextColor(Color.rgb(155,180,205));
+        mapSearch.setTextSize(14);
+        mapSearch.setBackground(card(Color.rgb(20,42,65),14,Color.argb(80,80,170,235)));
+        mapSearch.setPadding(dp(12),0,dp(12),0);
+        mapTop.addView(mapSearch,new LinearLayout.LayoutParams(0,dp(40),1));
+
+        TextView searchBtn=tile("⌕","بحث",Color.rgb(36,104,165));
+        LinearLayout.LayoutParams sbp=new LinearLayout.LayoutParams(dp(72),dp(40));sbp.leftMargin=dp(6);
+        mapTop.addView(searchBtn,sbp);
+
+        TextView gpsBtn=tile("⌖","موقعي",Color.rgb(38,118,92));
+        LinearLayout.LayoutParams gbp=new LinearLayout.LayoutParams(dp(72),dp(40));gbp.leftMargin=dp(6);
+        mapTop.addView(gpsBtn,gbp);
+
+        mapCard.addView(mapTop,new LinearLayout.LayoutParams(-1,dp(42)));
+
         homeMap=new HomeMapView(this);mapCard.addView(homeMap,new LinearLayout.LayoutParams(-1,0,1));
+        searchBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){homeMap.search(mapSearch.getText().toString());}});
+        mapSearch.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+            @Override public boolean onEditorAction(TextView v,int actionId,android.view.KeyEvent event){
+                homeMap.search(mapSearch.getText().toString());
+                return true;
+            }
+        });
+        gpsBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){homeMap.showCurrentLocation();}});
         coords=label("اضغط لفتح الملاحة",11,Color.rgb(175,195,220),false);coords.setGravity(Gravity.CENTER);
         mapCard.addView(coords,new LinearLayout.LayoutParams(-1,dp(22)));
         mapCard.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMap();}});
