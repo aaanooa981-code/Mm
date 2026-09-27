@@ -38,27 +38,18 @@ public class PermissionActivity extends Activity {
         root.addView(title);
 
         TextView body=new TextView(this);
-        body.setText("\nيحتاج Najm Space بعض الأذونات لتشغيل عداد السرعة GPS، استيراد ملفات APK، والوصول لخصائص الشاشة.\n\n• الموقع: عداد السرعة والخريطة\n• الملفات: استيراد تطبيقات Najm Space\n• تثبيت التطبيقات: فقط عند اختيارك لاحقًا\n");
+        body.setText("\nيطلب Najm Space الأذونات الأساسية مرة واحدة فقط.\n\n• الموقع: عداد السرعة والخريطة الحية\n• الملفات: استيراد التطبيقات والملفات\n\nإذن تثبيت التطبيقات في النظام يظهر فقط عندما تختار التثبيت في النظام.\n");
         body.setTextColor(Color.rgb(190,207,228));
         body.setTextSize(17);
         body.setGravity(Gravity.RIGHT);
         root.addView(body);
 
         Button allow=new Button(this);
-        allow.setText("منح الأذونات");
+        allow.setText("منح الأذونات والمتابعة");
         allow.setTextSize(18);
         root.addView(allow,new LinearLayout.LayoutParams(-1,58));
         allow.setOnClickListener(new View.OnClickListener(){
             @Override public void onClick(View v){ requestNeeded(); }
-        });
-
-        Button continueBtn=new Button(this);
-        continueBtn.setText("متابعة إلى Najm Space");
-        continueBtn.setTextSize(17);
-        LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,58); cp.topMargin=12;
-        root.addView(continueBtn,cp);
-        continueBtn.setOnClickListener(new View.OnClickListener(){
-            @Override public void onClick(View v){ finishSetup(); }
         });
 
         setContentView(root);
@@ -76,24 +67,10 @@ public class PermissionActivity extends Activity {
                 return;
             }
         }
-        openUnknownAppsIfNeeded();
+        finishSetup();
     }
 
-    private void openUnknownAppsIfNeeded(){
-        if(Build.VERSION.SDK_INT>=26 && !getPackageManager().canRequestPackageInstalls()){
-            try{
-                Intent i=new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:"+getPackageName()));
-                startActivity(i);
-            }catch(Exception ignored){}
-        }
-    }
-
-    @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){
-        super.onRequestPermissionsResult(r,p,g);
-        if(r==REQ) openUnknownAppsIfNeeded();
-    }
-
-    private void finishSetup(){
+    @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){\n        super.onRequestPermissionsResult(r,p,g);\n        if(r==REQ) finishSetup();\n    }\n\n    private void finishSetup(){
         SharedPreferences sp=getSharedPreferences("najmspace",MODE_PRIVATE);
         sp.edit().putBoolean("permissions_intro_done",true).apply();
         startActivity(new Intent(this,MainActivity.class));
