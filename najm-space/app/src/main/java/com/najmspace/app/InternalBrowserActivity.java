@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 public class InternalBrowserActivity extends Activity {
     private WebView web;
+    private boolean youtubeMode=false;
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
@@ -22,6 +23,7 @@ public class InternalBrowserActivity extends Activity {
         String title=getIntent().getStringExtra("title");
         if(url==null) url="https://www.google.com";
         if(title==null) title="Najm Browser";
+        youtubeMode=getIntent().getBooleanExtra("youtube_mode",false);
 
         LinearLayout root=new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -71,12 +73,28 @@ public class InternalBrowserActivity extends Activity {
         s.setDisplayZoomControls(false);
         s.setUseWideViewPort(true);
         s.setLoadWithOverviewMode(true);
+        s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        s.setDatabaseEnabled(true);
+        s.setAllowFileAccess(false);
+        s.setAllowContentAccess(true);
+        if(android.os.Build.VERSION.SDK_INT>=17) s.setMediaPlaybackRequiresUserGesture(false);
+        if(youtubeMode){
+            s.setTextZoom(100);
+            s.setLoadsImagesAutomatically(true);
+            web.setLayerType(View.LAYER_TYPE_HARDWARE,null);
+        }
         if(android.os.Build.VERSION.SDK_INT>=21) s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
         web.setWebViewClient(new WebViewClient(){
             @Override public boolean shouldOverrideUrlLoading(WebView view,String target){
                 view.loadUrl(target);
                 return true;
+            }
+            @Override public void onPageFinished(WebView view,String target){
+                super.onPageFinished(view,target);
+                if(youtubeMode && target!=null && target.contains("youtube")){
+                    getSharedPreferences("najmspace",MODE_PRIVATE).edit().putString("youtube_last_url",target).apply();
+                }
             }
         });
         if(android.os.Build.VERSION.SDK_INT>=21){
@@ -100,13 +118,20 @@ public class InternalBrowserActivity extends Activity {
         if(web!=null && web.canGoBack()) web.goBack(); else super.onBackPressed();
     }
 
+    @Override protected void onPause(){
+        if(web!=null)web.onPause();
+        super.onPause();
+    }
+
     @Override protected void onDestroy(){
         if(web!=null){web.stopLoading();web.destroy();}
         super.onDestroy();
     }
+
     @Override protected void onResume(){
         super.onResume();
-        NajmRecentStore.touch(this,"browser","المتصفح الداخلي","com.najmspace.app.InternalBrowserActivity");
+        if(web!=null)web.onResume();
+        NajmRecentStore.touch(this,youtubeMode?"youtube":"browser",youtubeMode?"YouTube":"المتصفح الداخلي","com.najmspace.app.InternalBrowserActivity");
     }
 
 }
