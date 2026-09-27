@@ -41,7 +41,7 @@ public class NajmAppsActivity extends Activity {
         root.setBackgroundColor(Color.rgb(8,16,29));
 
         TextView title=new TextView(this);
-        title.setText("NAJM APP SPACE  V1.5");
+        title.setText("NAJM APP SPACE  V1.6");
         title.setTextColor(Color.WHITE);
         title.setTextSize(25);
         title.setTypeface(Typeface.DEFAULT_BOLD);
@@ -261,7 +261,21 @@ public class NajmAppsActivity extends Activity {
                     pkg=pi.packageName;
                 }
                 LinearLayout row=row();
-                row.addView(info(appName,pkg+" • Legacy Container Pending",Color.rgb(235,185,80)),new LinearLayout.LayoutParams(0,-2,1));
+                final String pkgFinal=pkg;
+                final String nameFinal=appName;
+                boolean isAppGallery="com.huawei.appmarket".equals(pkgFinal) || nameFinal.toLowerCase().contains("appgallery");
+                String state=isAppGallery ? "Compatibility Runtime جاهز" : "Legacy Container Pending";
+                int stateColor=isAppGallery ? Color.rgb(70,205,130) : Color.rgb(235,185,80);
+                row.addView(info(appName,pkg+" • "+state,stateColor),new LinearLayout.LayoutParams(0,-2,1));
+
+                if(isAppGallery){
+                    Button run=new Button(this);run.setText("تشغيل");
+                    run.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+                        RuntimeRouter.openWeb(NajmAppsActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
+                    }});
+                    row.addView(run,new LinearLayout.LayoutParams(92,48));
+                }
+
                 Button del=new Button(this);del.setText("حذف");
                 del.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){f.delete();refresh();}});
                 row.addView(del,new LinearLayout.LayoutParams(86,48));
