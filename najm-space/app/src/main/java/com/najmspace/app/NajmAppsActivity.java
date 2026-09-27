@@ -103,7 +103,7 @@ public class NajmAppsActivity extends Activity {
         grid.removeAllViews();
 
         addShortcut("YouTube","▶",Color.rgb(198,45,55),new View.OnClickListener(){
-            @Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"YouTube","https://m.youtube.com");}
+            @Override public void onClick(View v){RuntimeRouter.openYouTube(NajmAppsActivity.this);}
         });
 
         addShortcut("المتصفح","◎",Color.rgb(45,110,180),new View.OnClickListener(){
