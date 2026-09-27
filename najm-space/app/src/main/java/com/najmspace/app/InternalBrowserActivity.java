@@ -87,6 +87,7 @@ public class InternalBrowserActivity extends Activity {
         });
 
         root.addView(web,new LinearLayout.LayoutParams(-1,0,1));
+        root.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,62));
         setContentView(root);
         web.loadUrl(url);
     }
