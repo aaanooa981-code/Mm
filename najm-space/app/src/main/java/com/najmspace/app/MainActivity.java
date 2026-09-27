@@ -202,8 +202,10 @@ public class MainActivity extends Activity implements LocationListener {
     }
 
     private void animateIn(View v){
-        v.setAlpha(0f);v.setTranslationY(dp(22));
-        v.animate().alpha(1f).translationY(0).setDuration(420).start();
+        boolean enabled=getSharedPreferences("najmspace",MODE_PRIVATE).getBoolean("animations",true);
+        if(!enabled){v.setAlpha(1f);v.setTranslationY(0f);return;}
+        v.setAlpha(0f);v.setTranslationY(dp(14));
+        v.animate().alpha(1f).translationY(0).setDuration(260).start();
     }
 
     private void requestLocation(){
