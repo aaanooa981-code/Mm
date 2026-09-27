@@ -162,24 +162,41 @@ public class MainActivity extends Activity implements LocationListener {
         mapCard.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMap();}});
 
         LinearLayout launchers=new LinearLayout(this);launchers.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.55f);llp.leftMargin=dp(8);cards.addView(launchers,llp);
+        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.72f);llp.leftMargin=dp(8);cards.addView(launchers,llp);
+        TextView store=tile("✦","AppGallery",Color.rgb(178,45,48));
+        store.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+            RuntimeRouter.openWeb(MainActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
+        }});
+        launchers.addView(store,new LinearLayout.LayoutParams(-1,0,1));
+
+        TextView files=tile("▤","الملفات",Color.rgb(47,116,145));
+        LinearLayout.LayoutParams flp=new LinearLayout.LayoutParams(-1,0,1);flp.topMargin=dp(6);launchers.addView(files,flp);
+        files.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+            startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
+        }});
+
         TextView youtube=tile("▶","YouTube",Color.rgb(200,45,52));
-        youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(MainActivity.this,CompatibilityActivity.class));}});
-        launchers.addView(youtube,new LinearLayout.LayoutParams(-1,0,1));
+        LinearLayout.LayoutParams ylp=new LinearLayout.LayoutParams(-1,0,1);ylp.topMargin=dp(6);launchers.addView(youtube,ylp);
+        youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+            RuntimeRouter.openWeb(MainActivity.this,"YouTube","https://m.youtube.com");
+        }});
+
         TextView apps=tile("▦","التطبيقات",Color.rgb(46,97,170));
-        LinearLayout.LayoutParams alp=new LinearLayout.LayoutParams(-1,0,1);alp.topMargin=dp(8);launchers.addView(apps,alp);
-        apps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(MainActivity.this,NajmAppsActivity.class));}});
+        LinearLayout.LayoutParams alp=new LinearLayout.LayoutParams(-1,0,1);alp.topMargin=dp(6);launchers.addView(apps,alp);
+        apps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+            startActivity(new Intent(MainActivity.this,NajmAppsActivity.class));
+        }});
 
         LinearLayout dock=new LinearLayout(this);dock.setPadding(dp(6),dp(5),dp(6),dp(5));
         dock.setBackground(card(Color.argb(225,15,24,38),24,Color.argb(70,100,165,230)));
-        String[] di={"⚙\nالإعدادات","♫\nالموسيقى","▶\nYouTube","◎\nBrowser","▦\nApps"};
+        String[] di={"⚙\nالإعدادات","▤\nالملفات","✦\nAppGallery","◎\nBrowser","▦\nApps"};
         for(int i=0;i<di.length;i++){
             final int idx=i;TextView d=tile("",di[i],Color.rgb(31,48,70));d.setText(di[i]);d.setTextSize(12);
             d.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
                 if(idx==0)startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
-                if(idx==1)openMusic();
-                if(idx==2)startActivity(new Intent(MainActivity.this,CompatibilityActivity.class));
-                if(idx==3)startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com")));
+                if(idx==1)startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
+                if(idx==2)RuntimeRouter.openWeb(MainActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
+                if(idx==3)RuntimeRouter.openWeb(MainActivity.this,"Najm Browser","https://www.google.com");
                 if(idx==4)startActivity(new Intent(MainActivity.this,NajmAppsActivity.class));
             }});
             dock.addView(d,new LinearLayout.LayoutParams(0,dp(60),1));
