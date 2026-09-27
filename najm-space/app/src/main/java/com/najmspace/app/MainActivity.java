@@ -231,7 +231,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         TextView youtube=tile("▶","YouTube",Color.rgb(200,45,52)); youtube.setTextSize(15);
         LinearLayout.LayoutParams ylp=new LinearLayout.LayoutParams(-1,0,1);ylp.topMargin=dp(6);launchers.addView(youtube,ylp);
         youtube.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
-            RuntimeRouter.openWeb(MainActivity.this,"YouTube","https://m.youtube.com");
+            RuntimeRouter.openYouTube(MainActivity.this);
         }});
 
         TextView apps=tile("▦","التطبيقات",Color.rgb(46,97,170)); apps.setTextSize(15);
