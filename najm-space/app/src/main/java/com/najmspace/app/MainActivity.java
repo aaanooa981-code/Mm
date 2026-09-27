@@ -35,6 +35,8 @@ public class MainActivity extends Activity implements LocationListener {
     private SpeedometerView speedometer;
     private HomeMapView homeMap;
     private FrameLayout shell,shade;
+    private LinearLayout navigationBar;
+    private long lastBottomTap=0;
     private float downY;
     private boolean shadeOpen=false;
     private final Handler handler=new Handler();
@@ -96,13 +98,40 @@ public class MainActivity extends Activity implements LocationListener {
         pull.setBackgroundColor(Color.TRANSPARENT);
         root.addView(pull,new LinearLayout.LayoutParams(-1,dp(12)));
 
-        LinearLayout status=new LinearLayout(this); status.setGravity(Gravity.CENTER_VERTICAL);
-        TextView brand=label("✦  Najm Space",20,Color.WHITE,true);
-        status.addView(brand,new LinearLayout.LayoutParams(0,dp(38),1));
-        TextView indicators=label("⌂   BT   Wi‑Fi   GPS",13,Color.rgb(175,195,220),false);
-        indicators.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
-        status.addView(indicators,new LinearLayout.LayoutParams(0,dp(38),1));
-        root.addView(status);
+        LinearLayout status=new LinearLayout(this);
+        status.setGravity(Gravity.CENTER_VERTICAL);
+        status.setPadding(dp(8),dp(4),dp(8),dp(4));
+        status.setBackground(card(Color.argb(210,12,24,39),18,Color.rgb(34,60,84)));
+
+        TextView brand=label("✦  Najm Space",18,Color.WHITE,true);
+        status.addView(brand,new LinearLayout.LayoutParams(0,dp(42),1.15f));
+
+        String[] topNames={"Wi‑Fi","BT","GPS","USB","Storage","Files","Store","⚙"};
+        for(int i=0;i<topNames.length;i++){
+            final int idx=i;
+            TextView q=label(topNames[i],11,Color.rgb(205,220,238),true);
+            q.setGravity(Gravity.CENTER);
+            q.setClickable(true);
+            q.setBackground(card(Color.rgb(24,42,62),12,Color.rgb(42,70,96)));
+            q.setOnClickListener(new View.OnClickListener(){
+                @Override public void onClick(View v){
+                    if(idx==0)startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                    else if(idx==1)startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+                    else if(idx==2)startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    else if(idx==3)startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
+                    else if(idx==4)startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
+                    else if(idx==5)startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
+                    else if(idx==6)RuntimeRouter.openWeb(MainActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
+                    else startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
+                }
+            });
+            LinearLayout.LayoutParams qp=new LinearLayout.LayoutParams(0,dp(34),.72f);
+            if(i>0)qp.leftMargin=dp(4);
+            status.addView(q,qp);
+        }
+        LinearLayout.LayoutParams stp=new LinearLayout.LayoutParams(-1,dp(46));
+        stp.bottomMargin=dp(8);
+        root.addView(status,stp);
 
         LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.HORIZONTAL);
         root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
@@ -244,11 +273,41 @@ public class MainActivity extends Activity implements LocationListener {
             }
         });
 
-        root.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,dp(54)));
+        navigationBar=NajmNavigation.create(this);
+        boolean navHidden=getSharedPreferences("najmspace",MODE_PRIVATE).getBoolean("nav_hidden",false);
+        navigationBar.setVisibility(navHidden?View.GONE:View.VISIBLE);
+        root.addView(navigationBar,new LinearLayout.LayoutParams(-1,dp(42)));
+
+        View navHotZone=new View(this);
+        navHotZone.setBackgroundColor(Color.TRANSPARENT);
+        navHotZone.setOnTouchListener(new View.OnTouchListener(){
+            @Override public boolean onTouch(View v,MotionEvent e){
+                if(e.getAction()==MotionEvent.ACTION_UP){
+                    long now=System.currentTimeMillis();
+                    if(now-lastBottomTap<420){
+                        toggleNavigationBar();
+                        lastBottomTap=0;
+                    }else{
+                        lastBottomTap=now;
+                    }
+                    return true;
+                }
+                return true;
+            }
+        });
+        root.addView(navHotZone,new LinearLayout.LayoutParams(-1,dp(12)));
         setContentView(shell);
         animateIn(root);
         NajmHints.show(this,"main_navigation","تلميح","استخدم ◁ للرجوع للتطبيق السابق، ○ للهوم، و▢ للتطبيقات المفتوحة.");
         startLocationIfAllowed();
+    }
+
+    private void toggleNavigationBar(){
+        if(navigationBar==null)return;
+        boolean hide=navigationBar.getVisibility()==View.VISIBLE;
+        navigationBar.setVisibility(hide?View.GONE:View.VISIBLE);
+        getSharedPreferences("najmspace",MODE_PRIVATE).edit().putBoolean("nav_hidden",hide).apply();
+        NajmHints.show(this,"nav_toggle","شريط التنقل","انقر مرتين أسفل الشاشة لإخفاء أو إظهار شريط الرجوع/الهوم/التطبيقات المفتوحة.");
     }
 
     private void animateIn(View v){
