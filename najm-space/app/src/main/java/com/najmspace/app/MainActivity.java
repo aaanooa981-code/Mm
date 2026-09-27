@@ -110,36 +110,17 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
         LinearLayout status=new LinearLayout(this);
         status.setGravity(Gravity.CENTER_VERTICAL);
-        status.setPadding(dp(8),dp(4),dp(8),dp(4));
-        status.setBackground(card(Color.argb(210,12,24,39),18,Color.rgb(34,60,84)));
+        status.setPadding(dp(10),dp(4),dp(10),dp(4));
+        status.setBackground(card(Color.argb(200,12,24,39),18,Color.rgb(34,60,84)));
 
         TextView brand=label("✦  Najm Space",18,Color.WHITE,true);
-        status.addView(brand,new LinearLayout.LayoutParams(0,dp(42),1.15f));
+        status.addView(brand,new LinearLayout.LayoutParams(0,dp(40),1));
 
-        String[] topNames={"Wi‑Fi","BT","GPS","USB","Storage","Files","Store","⚙"};
-        for(int i=0;i<topNames.length;i++){
-            final int idx=i;
-            TextView q=label(topNames[i],11,Color.rgb(205,220,238),true);
-            q.setGravity(Gravity.CENTER);
-            q.setClickable(true);
-            q.setBackground(card(Color.rgb(24,42,62),12,Color.rgb(42,70,96)));
-            q.setOnClickListener(new View.OnClickListener(){
-                @Override public void onClick(View v){
-                    if(idx==0)startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                    else if(idx==1)startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
-                    else if(idx==2)startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                    else if(idx==3)startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
-                    else if(idx==4)startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
-                    else if(idx==5)startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
-                    else if(idx==6)RuntimeRouter.openWeb(MainActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
-                    else startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
-                }
-            });
-            LinearLayout.LayoutParams qp=new LinearLayout.LayoutParams(0,dp(34),.72f);
-            if(i>0)qp.leftMargin=dp(4);
-            status.addView(q,qp);
-        }
-        LinearLayout.LayoutParams stp=new LinearLayout.LayoutParams(-1,dp(46));
+        TextView indicators=label("Wi‑Fi   •   BT   •   GPS",12,Color.rgb(185,205,228),false);
+        indicators.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+        status.addView(indicators,new LinearLayout.LayoutParams(0,dp(40),1));
+
+        LinearLayout.LayoutParams stp=new LinearLayout.LayoutParams(-1,dp(44));
         stp.bottomMargin=dp(8);
         root.addView(status,stp);
 
@@ -422,20 +403,45 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         panel.setBackground(card(Color.rgb(25,35,50),24,Color.argb(100,75,165,245)));
         panel.addView(label("مركز التحكم السريع",21,Color.WHITE,true));
 
-        LinearLayout row=new LinearLayout(this);
-        String[] titles={"Wi‑Fi","Bluetooth","الشاشة","الإعدادات"};
-        int[] colors={Color.rgb(42,103,160),Color.rgb(49,88,145),Color.rgb(155,110,40),Color.rgb(92,76,130)};
+        LinearLayout row1=new LinearLayout(this);
+        String[] titles1={"Wi-Fi","Bluetooth","GPS","USB"};
+        int[] colors1={Color.rgb(42,103,160),Color.rgb(49,88,145),Color.rgb(38,118,92),Color.rgb(47,116,145)};
         for(int i=0;i<4;i++){
-            final int idx=i;TextView t=tile(i==0?"⌁":i==1?"ᛒ":i==2?"☀":"⚙",titles[i],colors[i]);
+            final int idx=i;
+            TextView t=tile(i==0?"⌁":i==1?"ᛒ":i==2?"⌖":"▤",titles1[i],colors1[i]);
             t.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
                 if(idx==0)startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                 if(idx==1)startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
-                if(idx==2)startActivity(new Intent(Settings.ACTION_DISPLAY_SETTINGS));
+                if(idx==2)startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                if(idx==3)startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
+            }});
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(66),1);
+            if(i>0)lp.leftMargin=dp(7);
+            row1.addView(t,lp);
+        }
+        LinearLayout.LayoutParams r1lp=new LinearLayout.LayoutParams(-1,dp(70));
+        r1lp.topMargin=dp(10);
+        panel.addView(row1,r1lp);
+
+        LinearLayout row2=new LinearLayout(this);
+        String[] titles2={"التخزين","AppGallery","الملفات","الإعدادات"};
+        int[] colors2={Color.rgb(75,92,118),Color.rgb(178,45,48),Color.rgb(47,116,145),Color.rgb(92,76,130)};
+        for(int i=0;i<4;i++){
+            final int idx=i;
+            TextView t=tile(i==0?"◫":i==1?"✦":i==2?"▤":"⚙",titles2[i],colors2[i]);
+            t.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
+                if(idx==0)startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
+                if(idx==1)RuntimeRouter.openWeb(MainActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
+                if(idx==2)startActivity(new Intent(MainActivity.this,NajmFileManagerActivity.class));
                 if(idx==3)startActivity(new Intent(MainActivity.this,NajmSettingsActivity.class));
             }});
-            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(74),1);if(i>0)lp.leftMargin=dp(7);row.addView(t,lp);
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(62),1);
+            if(i>0)lp.leftMargin=dp(7);
+            row2.addView(t,lp);
         }
-        LinearLayout.LayoutParams rlp=new LinearLayout.LayoutParams(-1,dp(78));rlp.topMargin=dp(10);panel.addView(row,rlp);
+        LinearLayout.LayoutParams r2lp=new LinearLayout.LayoutParams(-1,dp(66));
+        r2lp.topMargin=dp(7);
+        panel.addView(row2,r2lp);
 
         TextView bl=label("السطوع",13,Color.WHITE,false);panel.addView(bl);
         SeekBar bright=new SeekBar(this);bright.setMax(100);bright.setProgress(70);
@@ -452,7 +458,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}
         });panel.addView(vol);
 
-        FrameLayout.LayoutParams pp=new FrameLayout.LayoutParams(-1,dp(272));pp.gravity=Gravity.TOP;pp.leftMargin=dp(12);pp.rightMargin=dp(12);pp.topMargin=dp(5);shade.addView(panel,pp);
+        FrameLayout.LayoutParams pp=new FrameLayout.LayoutParams(-1,dp(348));pp.gravity=Gravity.TOP;pp.leftMargin=dp(12);pp.rightMargin=dp(12);pp.topMargin=dp(5);shade.addView(panel,pp);
         shade.setOnTouchListener(new View.OnTouchListener(){
             @Override public boolean onTouch(View v,MotionEvent e){
                 if(e.getAction()==MotionEvent.ACTION_DOWN){downY=e.getRawY();return true;}
@@ -464,11 +470,11 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     }
 
     private void showShade(){
-        if(shadeOpen)return;shadeOpen=true;shade.setVisibility(View.VISIBLE);shade.setTranslationY(-dp(290));shade.setAlpha(0f);
+        if(shadeOpen)return;shadeOpen=true;shade.setVisibility(View.VISIBLE);shade.setTranslationY(-dp(365));shade.setAlpha(0f);
         shade.animate().translationY(0).alpha(1f).setDuration(250).start();
     }
     private void hideShade(){
-        if(!shadeOpen)return;shadeOpen=false;shade.animate().translationY(-dp(290)).alpha(0f).setDuration(200).withEndAction(new Runnable(){@Override public void run(){shade.setVisibility(View.GONE);}}).start();
+        if(!shadeOpen)return;shadeOpen=false;shade.animate().translationY(-dp(365)).alpha(0f).setDuration(200).withEndAction(new Runnable(){@Override public void run(){shade.setVisibility(View.GONE);}}).start();
     }
 
     @Override public void onBackPressed(){
