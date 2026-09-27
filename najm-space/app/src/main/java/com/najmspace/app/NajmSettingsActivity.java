@@ -195,9 +195,15 @@ public class NajmSettingsActivity extends Activity {
             content.addView(note);
         }
 
-        content.setAlpha(0f);
-        content.setTranslationX(dp(18));
-        content.animate().alpha(1f).translationX(0f).setDuration(150).start();
+        boolean animate=prefs.getBoolean("animations",true);
+        if(animate){
+            content.setAlpha(0f);
+            content.setTranslationX(dp(12));
+            content.animate().alpha(1f).translationX(0f).setDuration(120).start();
+        }else{
+            content.setAlpha(1f);
+            content.setTranslationX(0f);
+        }
     }
 
     @Override protected void onActivityResult(int request,int result,Intent data){
