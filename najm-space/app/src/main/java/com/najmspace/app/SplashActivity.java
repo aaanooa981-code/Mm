@@ -21,7 +21,6 @@ public class SplashActivity extends Activity {
 
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(7,14,28));
-
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setGravity(Gravity.CENTER);
@@ -38,7 +37,7 @@ public class SplashActivity extends Activity {
         box.addView(title);
 
         TextView sub = new TextView(this);
-        sub.setText("Smart Car Experience");
+        sub.setText("Private App Space • Smart Car Experience");
         sub.setTextColor(Color.rgb(120,175,235));
         sub.setTextSize(15);
         sub.setGravity(Gravity.CENTER);
@@ -49,17 +48,17 @@ public class SplashActivity extends Activity {
 
         icon.setScaleX(.55f); icon.setScaleY(.55f); icon.setAlpha(0f);
         title.setAlpha(0f); sub.setAlpha(0f);
-
         icon.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(650).start();
         title.animate().alpha(1f).setStartDelay(250).setDuration(450).start();
         sub.animate().alpha(1f).setStartDelay(420).setDuration(400).start();
 
         new Handler().postDelayed(new Runnable(){
             @Override public void run(){
-                startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                boolean done=getSharedPreferences("najmspace",MODE_PRIVATE).getBoolean("permissions_intro_done",false);
+                startActivity(new Intent(SplashActivity.this, done ? MainActivity.class : PermissionActivity.class));
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 finish();
             }
-        }, 1200);
+        },1200);
     }
 }
