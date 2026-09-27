@@ -38,7 +38,14 @@ public class PermissionActivity extends Activity {
         root.addView(title);
 
         TextView body=new TextView(this);
-        body.setText("\nيطلب Najm Space الأذونات الأساسية مرة واحدة فقط.\n\n• الموقع: عداد السرعة والخريطة الحية\n• الملفات: استيراد التطبيقات والملفات\n\nإذن تثبيت التطبيقات في النظام يظهر فقط عندما تختار التثبيت في النظام.\n");
+        body.setText("
+يطلب Najm Space الأذونات الأساسية مرة واحدة فقط.
+
+• الموقع: عداد السرعة والخريطة الحية
+• الملفات: استيراد التطبيقات والملفات
+
+إذن تثبيت التطبيقات في النظام يظهر فقط عندما تختار التثبيت في النظام.
+");
         body.setTextColor(Color.rgb(190,207,228));
         body.setTextSize(17);
         body.setGravity(Gravity.RIGHT);
@@ -70,7 +77,12 @@ public class PermissionActivity extends Activity {
         finishSetup();
     }
 
-    @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){\n        super.onRequestPermissionsResult(r,p,g);\n        if(r==REQ) finishSetup();\n    }\n\n    private void finishSetup(){
+    @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){
+        super.onRequestPermissionsResult(r,p,g);
+        if(r==REQ) finishSetup();
+    }
+
+    private void finishSetup(){
         SharedPreferences sp=getSharedPreferences("najmspace",MODE_PRIVATE);
         sp.edit().putBoolean("permissions_intro_done",true).apply();
         startActivity(new Intent(this,MainActivity.class));
