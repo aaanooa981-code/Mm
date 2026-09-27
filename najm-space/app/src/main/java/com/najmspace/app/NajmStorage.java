@@ -29,19 +29,25 @@ public final class NajmStorage {
         return prefs(c).getString("storage_mode",AUTO);
     }
 
-    public static void setCustomTree(Context c,String uri){
-        prefs(c).edit().putString("storage_custom_uri",uri).putString("storage_mode",CUSTOM).apply();
+    public static void setCustomPath(Context c,String path){
+        prefs(c).edit().putString("storage_custom_path",path).putString("storage_mode",CUSTOM).apply();
     }
 
-    public static String getCustomTree(Context c){
-        return prefs(c).getString("storage_custom_uri","");
+    public static String getCustomPath(Context c){
+        return prefs(c).getString("storage_custom_path","");
     }
 
     public static File base(Context c){
         String mode=getMode(c);
         File chosen=null;
 
-        if(INTERNAL.equals(mode)){
+        if(CUSTOM.equals(mode)){
+            String path=getCustomPath(c);
+            if(path!=null && path.length()>0){
+                File parent=new File(path);
+                if(parent.exists() && parent.isDirectory())chosen=new File(parent,"NajmSpace");
+            }
+        }else if(INTERNAL.equals(mode)){
             chosen=new File(c.getFilesDir(),"NajmSpace");
         }else if(EXTERNAL.equals(mode)){
             File ext=null;
