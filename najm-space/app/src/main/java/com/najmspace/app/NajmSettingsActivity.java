@@ -57,7 +57,12 @@ public class NajmSettingsActivity extends Activity {
         scroll.addView(content,new ScrollView.LayoutParams(-1,-2));
         root.addView(scroll,new LinearLayout.LayoutParams(0,-1,1));
 
-        setContentView(root);
+        LinearLayout outer=new LinearLayout(this);
+        outer.setOrientation(LinearLayout.VERTICAL);
+        outer.setBackgroundColor(Color.rgb(7,15,27));
+        outer.addView(root,new LinearLayout.LayoutParams(-1,0,1));
+        outer.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,62));
+        setContentView(outer);
         showSection(0);
     }
 
