@@ -220,4 +220,9 @@ public class NajmSettingsActivity extends Activity {
         java.io.File[] fs=d.listFiles();
         if(fs!=null)for(java.io.File f:fs)f.delete();
     }
+    @Override protected void onResume(){
+        super.onResume();
+        NajmRecentStore.touch(this,"settings","الإعدادات","com.najmspace.app.NajmSettingsActivity");
+    }
+
 }
