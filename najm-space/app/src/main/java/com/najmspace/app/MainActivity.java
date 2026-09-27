@@ -187,7 +187,7 @@ public class MainActivity extends Activity {
         TextView browser = tile("◎","Browser",Color.rgb(42,117,94));
         browser.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"))));
         TextView settings = tile("⚙","Settings",Color.rgb(98,82,133));
-        settings.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_SETTINGS)));
+        settings.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, NajmSettingsActivity.class)));
         q2.addView(browser,new LinearLayout.LayoutParams(0,dp(100),1));
         LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(0,dp(100),1);
         sp.leftMargin=dp(10);
@@ -269,7 +269,7 @@ public class MainActivity extends Activity {
         TextView display=tile("☀","Display",Color.rgb(143,104,42));
         display.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_DISPLAY_SETTINGS)));
         TextView settings=tile("⚙","Settings",Color.rgb(93,76,128));
-        settings.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_SETTINGS)));
+        settings.setOnClickListener(v->startActivity(new Intent(MainActivity.this, NajmSettingsActivity.class)));
 
         row.addView(wifi,new LinearLayout.LayoutParams(0,dp(82),1));
         row.addView(bt,new LinearLayout.LayoutParams(0,dp(82),1));
