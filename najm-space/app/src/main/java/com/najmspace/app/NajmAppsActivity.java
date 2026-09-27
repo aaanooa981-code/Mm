@@ -41,7 +41,7 @@ public class NajmAppsActivity extends Activity {
         root.setBackgroundColor(Color.rgb(8,16,29));
 
         TextView title=new TextView(this);
-        title.setText("NAJM APP SPACE  V1.4");
+        title.setText("NAJM APP SPACE  V1.5");
         title.setTextColor(Color.WHITE);
         title.setTextSize(25);
         title.setTypeface(Typeface.DEFAULT_BOLD);
