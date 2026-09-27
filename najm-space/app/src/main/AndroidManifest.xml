@@ -12,7 +12,7 @@
     <application android:allowBackup="true" android:label="Najm Space" android:icon="@mipmap/ic_launcher" android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
         <activity android:name=".PermissionActivity" android:screenOrientation="landscape"/>
         <activity android:name=".InternalBrowserActivity" android:screenOrientation="landscape"/>
-        <activity android:name=".RuntimeManagerActivity" android:screenOrientation="landscape"/>
+        <activity android:name=".MiniAppRuntimeActivity" android:screenOrientation="landscape"/>
         <activity android:name=".RuntimeManagerActivity" android:screenOrientation="landscape"/>
         <activity android:name=".NajmAppsActivity" android:screenOrientation="landscape"/>
         <activity android:name=".AppsActivity" android:screenOrientation="landscape"/>
