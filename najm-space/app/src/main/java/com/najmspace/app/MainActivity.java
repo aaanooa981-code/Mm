@@ -32,6 +32,7 @@ import java.util.Locale;
 public class MainActivity extends Activity implements LocationListener {
     private TextView clock,date,gpsState,coords;
     private SpeedometerView speedometer;
+    private HomeMapView homeMap;
     private FrameLayout shell,shade;
     private float downY;
     private boolean shadeOpen=false;
@@ -155,7 +156,7 @@ public class MainActivity extends Activity implements LocationListener {
         mapCard.setBackground(card(Color.rgb(13,31,51),22,Color.argb(100,55,165,245)));
         LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,2.15f);mlp.leftMargin=dp(8);cards.addView(mapCard,mlp);
         TextView mapTitle=label("الخريطة",17,Color.WHITE,true);mapCard.addView(mapTitle,new LinearLayout.LayoutParams(-1,dp(24)));
-        MapPreviewView map=new MapPreviewView(this);mapCard.addView(map,new LinearLayout.LayoutParams(-1,0,1));
+        homeMap=new HomeMapView(this);mapCard.addView(homeMap,new LinearLayout.LayoutParams(-1,0,1));
         coords=label("اضغط لفتح الملاحة",11,Color.rgb(175,195,220),false);coords.setGravity(Gravity.CENTER);
         mapCard.addView(coords,new LinearLayout.LayoutParams(-1,dp(22)));
         mapCard.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMap();}});
@@ -198,7 +199,7 @@ public class MainActivity extends Activity implements LocationListener {
         setContentView(shell);
         animateIn(root);
         NajmHints.show(this,"main_navigation","تلميح","استخدم ◁ للرجوع للتطبيق السابق، ○ للهوم، و▢ للتطبيقات المفتوحة.");
-        requestLocation();
+        startLocationIfAllowed();
     }
 
     private void animateIn(View v){
@@ -208,16 +209,13 @@ public class MainActivity extends Activity implements LocationListener {
         v.animate().alpha(1f).translationY(0).setDuration(260).start();
     }
 
-    private void requestLocation(){
+    private void startLocationIfAllowed(){
         if(Build.VERSION.SDK_INT>=23 && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);
-        }else startLocation();
-    }
-
-    @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){
-        super.onRequestPermissionsResult(r,p,g);
-        if(r==REQ_LOCATION && g.length>0 && g[0]==PackageManager.PERMISSION_GRANTED)startLocation();
-        else gpsState.setText("GPS: صلاحية الموقع غير مفعلة");
+            gpsState.setText("GPS: يحتاج إذن الموقع");
+            NajmHints.show(this,"gps_permission","الموقع","فعّل إذن الموقع من إعدادات Najm Space إذا كنت تريد عداد السرعة والخريطة الحية.");
+            return;
+        }
+        startLocation();
     }
 
     private void startLocation(){
@@ -238,6 +236,7 @@ public class MainActivity extends Activity implements LocationListener {
         speedometer.setSpeed(kmh);
         gpsState.setText("GPS: "+(l.getProvider()==null?"متصل":l.getProvider()));
         coords.setText(String.format(Locale.US,"%.4f , %.4f",lastLat,lastLon));
+        if(homeMap!=null)homeMap.updateLocation(lastLat,lastLon);
     }
     @Override public void onProviderDisabled(String p){gpsState.setText("GPS: متوقف");}
     @Override public void onProviderEnabled(String p){gpsState.setText("GPS: متصل");}
