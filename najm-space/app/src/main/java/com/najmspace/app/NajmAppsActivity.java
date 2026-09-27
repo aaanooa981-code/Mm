@@ -329,4 +329,9 @@ public class NajmAppsActivity extends Activity {
     private void addEmpty(String text){
         TextView e=new TextView(this);e.setText(text);e.setTextColor(Color.rgb(145,165,190));e.setTextSize(14);e.setPadding(8,10,8,16);list.addView(e);
     }
+    @Override protected void onResume(){
+        super.onResume();
+        NajmRecentStore.touch(this,"apps","NAJM APP SPACE","com.najmspace.app.NajmAppsActivity");
+    }
+
 }
