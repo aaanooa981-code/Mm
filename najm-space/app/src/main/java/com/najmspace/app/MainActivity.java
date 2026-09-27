@@ -68,7 +68,7 @@ public class MainActivity extends Activity implements LocationListener {
     private TextView tile(String icon,String title,int color){
         TextView t=label(icon+"\n"+title,14,Color.WHITE,true);
         t.setGravity(Gravity.CENTER); t.setPadding(dp(8),dp(8),dp(8),dp(8));
-        t.setBackground(card(color,18,Color.argb(70,120,185,255)));
+        t.setBackground(card(color,20,Color.argb(70,120,185,255)));
         t.setClickable(true); t.setFocusable(true);
         t.setOnTouchListener(new View.OnTouchListener(){
             @Override public boolean onTouch(View v,MotionEvent e){
@@ -89,7 +89,7 @@ public class MainActivity extends Activity implements LocationListener {
         shell.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(5,13,24),Color.rgb(12,27,47),Color.rgb(7,16,29)}));
 
         LinearLayout root=new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(14),dp(8),dp(14),dp(12));
+        root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(16),dp(10),dp(16),dp(10));
         shell.addView(root,new FrameLayout.LayoutParams(-1,-1));
 
         View pull=new View(this);
@@ -119,7 +119,7 @@ public class MainActivity extends Activity implements LocationListener {
 
         LinearLayout weather=new LinearLayout(this); weather.setOrientation(LinearLayout.VERTICAL); weather.setGravity(Gravity.CENTER);
         weather.setBackground(card(Color.rgb(18,34,54),22,Color.argb(80,70,155,230)));
-        LinearLayout.LayoutParams wlp=new LinearLayout.LayoutParams(0,dp(122),.75f);wlp.leftMargin=dp(8);
+        LinearLayout.LayoutParams wlp=new LinearLayout.LayoutParams(0,dp(122),.75f);wlp.leftMargin=dp(10);
         weather.addView(label("☀  32°",26,Color.rgb(245,192,70),true));
         weather.addView(label("مشمس",13,Color.WHITE,false));
         weather.addView(label("الرياض",12,Color.rgb(180,200,225),false));
@@ -128,7 +128,7 @@ public class MainActivity extends Activity implements LocationListener {
 
         LinearLayout speedCard=new LinearLayout(this); speedCard.setOrientation(LinearLayout.VERTICAL);speedCard.setGravity(Gravity.CENTER);
         speedCard.setBackground(card(Color.rgb(14,30,48),22,Color.argb(90,70,165,245)));
-        LinearLayout.LayoutParams slp=new LinearLayout.LayoutParams(-1,0,1);slp.topMargin=dp(8);
+        LinearLayout.LayoutParams slp=new LinearLayout.LayoutParams(-1,0,1);slp.topMargin=dp(10);
         speedometer=new SpeedometerView(this);speedCard.addView(speedometer,new LinearLayout.LayoutParams(-1,0,1));
         gpsState=label("GPS: جاري البحث...",12,Color.rgb(229,181,82),false);gpsState.setGravity(Gravity.CENTER);
         speedCard.addView(gpsState,new LinearLayout.LayoutParams(-1,dp(24)));
@@ -138,7 +138,7 @@ public class MainActivity extends Activity implements LocationListener {
 
         // center-right: hero, music, map, apps
         LinearLayout center=new LinearLayout(this);center.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams clp=new LinearLayout.LayoutParams(0,-1,2.4f);clp.leftMargin=dp(10);body.addView(center,clp);
+        LinearLayout.LayoutParams clp=new LinearLayout.LayoutParams(0,-1,2.4f);clp.leftMargin=dp(12);body.addView(center,clp);
 
         LinearLayout cards=new LinearLayout(this);
         LinearLayout.LayoutParams cardsLp=new LinearLayout.LayoutParams(-1,0,1);
@@ -155,7 +155,7 @@ public class MainActivity extends Activity implements LocationListener {
 
         LinearLayout mapCard=new LinearLayout(this);mapCard.setOrientation(LinearLayout.VERTICAL);mapCard.setPadding(dp(10),dp(10),dp(10),dp(8));
         mapCard.setBackground(card(Color.rgb(13,31,51),22,Color.argb(100,55,165,245)));
-        LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,2.15f);mlp.leftMargin=dp(8);cards.addView(mapCard,mlp);
+        LinearLayout.LayoutParams mlp=new LinearLayout.LayoutParams(0,-1,2.15f);mlp.leftMargin=dp(10);cards.addView(mapCard,mlp);
         LinearLayout mapTop=new LinearLayout(this);
         mapTop.setOrientation(LinearLayout.HORIZONTAL);
         mapTop.setGravity(Gravity.CENTER_VERTICAL);
@@ -166,7 +166,7 @@ public class MainActivity extends Activity implements LocationListener {
         mapSearch.setTextColor(Color.WHITE);
         mapSearch.setHintTextColor(Color.rgb(155,180,205));
         mapSearch.setTextSize(14);
-        mapSearch.setBackground(card(Color.rgb(20,42,65),14,Color.argb(80,80,170,235)));
+        mapSearch.setBackground(card(Color.rgb(20,42,65),16,Color.argb(80,80,170,235)));
         mapSearch.setPadding(dp(12),0,dp(12),0);
         mapTop.addView(mapSearch,new LinearLayout.LayoutParams(0,dp(40),1));
 
@@ -194,7 +194,7 @@ public class MainActivity extends Activity implements LocationListener {
         mapCard.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){openMap();}});
 
         LinearLayout launchers=new LinearLayout(this);launchers.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.72f);llp.leftMargin=dp(8);cards.addView(launchers,llp);
+        LinearLayout.LayoutParams llp=new LinearLayout.LayoutParams(0,-1,.72f);llp.leftMargin=dp(10);cards.addView(launchers,llp);
         TextView store=tile("✦","AppGallery",Color.rgb(178,45,48));
         store.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             RuntimeRouter.openWeb(MainActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
@@ -219,7 +219,7 @@ public class MainActivity extends Activity implements LocationListener {
             startActivity(new Intent(MainActivity.this,NajmAppsActivity.class));
         }});
 
-        LinearLayout dock=new LinearLayout(this);dock.setPadding(dp(6),dp(5),dp(6),dp(5));
+        LinearLayout dock=new LinearLayout(this);dock.setPadding(dp(8),dp(7),dp(8),dp(7));
         dock.setBackground(card(Color.argb(225,15,24,38),24,Color.argb(70,100,165,230)));
         String[] di={"⚙\nالإعدادات","▤\nالملفات","✦\nAppGallery","◎\nBrowser","▦\nApps"};
         for(int i=0;i<di.length;i++){
@@ -233,7 +233,7 @@ public class MainActivity extends Activity implements LocationListener {
             }});
             dock.addView(d,new LinearLayout.LayoutParams(0,dp(60),1));
         }
-        LinearLayout.LayoutParams dlp=new LinearLayout.LayoutParams(-1,dp(64));dlp.topMargin=dp(8);center.addView(dock,dlp);
+        LinearLayout.LayoutParams dlp=new LinearLayout.LayoutParams(-1,dp(66));dlp.topMargin=dp(10);center.addView(dock,dlp);
 
         buildShade();
         pull.setOnTouchListener(new View.OnTouchListener(){
