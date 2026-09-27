@@ -191,8 +191,7 @@ public class NajmFileManagerActivity extends Activity {
     }
 
     private void installIntoNajm(File apk){
-        File dir=new File(getFilesDir(),"najm_apps");
-        if(!dir.exists())dir.mkdirs();
+        File dir=NajmStorage.appsDir(this);
         File out=new File(dir,safe(apk.getName()));
         copyFile(apk,out);
         AlertDialog.Builder b=new AlertDialog.Builder(this);
