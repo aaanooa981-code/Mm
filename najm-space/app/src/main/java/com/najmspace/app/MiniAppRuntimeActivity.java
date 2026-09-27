@@ -68,6 +68,7 @@ public class MiniAppRuntimeActivity extends Activity {
         web.setWebChromeClient(new WebChromeClient());
         web.setBackgroundColor(Color.rgb(8,16,29));
         root.addView(web,new LinearLayout.LayoutParams(-1,0,1));
+        root.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,62));
 
         setContentView(root);
 
