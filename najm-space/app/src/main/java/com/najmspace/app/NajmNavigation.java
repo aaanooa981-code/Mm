@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -17,8 +18,13 @@ public final class NajmNavigation {
         LinearLayout bar=new LinearLayout(a);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER);
-        bar.setPadding(8,4,8,4);
-        bar.setBackgroundColor(Color.rgb(10,18,30));
+        int d=(int)(a.getResources().getDisplayMetrics().density+.5f);
+        bar.setPadding(10*d,5*d,10*d,5*d);
+        GradientDrawable bg=new GradientDrawable();
+        bg.setColor(Color.rgb(10,18,30));
+        bg.setCornerRadius(20*d);
+        bg.setStroke(Math.max(1,d),Color.rgb(31,54,78));
+        bar.setBackground(bg);
 
         TextView back=item(a,"◁","رجوع");
         back.setOnClickListener(new View.OnClickListener(){
