@@ -131,6 +131,7 @@ public class NajmSettingsActivity extends Activity {
             content.addView(sub("إدارة التطبيقات المحفوظة داخل مساحة Najm Space."));
             action("فتح NAJM APP SPACE",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmAppsActivity.class));}});
             content.addView(toggle("تشغيل الخدمات المتوافقة داخل Najm Space", "internal_runtime", true));
+            action("حالة Runtime Engine",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,RuntimeManagerActivity.class));}});
             content.addView(toggle("إخفاء تطبيقات النظام من قائمة Najm", "hide_system_apps", true));
         }
 
@@ -168,7 +169,7 @@ public class NajmSettingsActivity extends Activity {
 
         if(s==7){
             content.addView(heading("حول Najm Space"));
-            content.addView(sub("Najm Space V0.8\nAndroid 4.4+\nواجهة سيارة + App Space + Compatibility Runtime"));
+            content.addView(sub("Najm Space V0.9\nAndroid 4.4+\nواجهة سيارة + App Space + Runtime Engine"));
             TextView note=txt("محرك تشغيل APK الافتراضي الكامل على Android 4.4.2 ما زال قيد التطوير. الخدمات التي يمكن تشغيلها داخليًا تعمل عبر Internal Runtime.",15,Color.rgb(205,215,230),false);
             content.addView(note);
         }
