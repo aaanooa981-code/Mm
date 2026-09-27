@@ -32,10 +32,8 @@ public class NajmAppsActivity extends Activity {
 
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
-        appsDir=new File(getFilesDir(),"najm_apps");
-        miniDir=new File(getFilesDir(),"najm_mini_apps");
-        if(!appsDir.exists())appsDir.mkdirs();
-        if(!miniDir.exists())miniDir.mkdirs();
+        appsDir=NajmStorage.appsDir(this);
+        miniDir=NajmStorage.miniAppsDir(this);
 
         LinearLayout root=new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -43,7 +41,7 @@ public class NajmAppsActivity extends Activity {
         root.setBackgroundColor(Color.rgb(8,16,29));
 
         TextView title=new TextView(this);
-        title.setText("NAJM APP SPACE  V1.0");
+        title.setText("NAJM APP SPACE  V1.3");
         title.setTextColor(Color.WHITE);
         title.setTextSize(25);
         title.setTypeface(Typeface.DEFAULT_BOLD);
