@@ -38,7 +38,7 @@ public class PermissionActivity extends Activity {
         root.addView(title);
 
         TextView body=new TextView(this);
-        body.setText("\nيطلب Najm Space الأذونات الأساسية مرة واحدة فقط.\n\n• الموقع: عداد السرعة والخريطة الحية\n• الملفات: استيراد التطبيقات والملفات\n\nإذن تثبيت التطبيقات في النظام يظهر فقط عندما تختار التثبيت في النظام.\n");
+        body.setText("\nيطلب Najm Space الأذونات الأساسية مرة واحدة فقط.\n\n• الموقع: عداد السرعة والخريطة الحية\n• الملفات: استيراد التطبيقات والملفات\n• المايك: البحث الصوتي والمكالمات داخل الخدمات\n• الكاميرا: الفيديو ومسح الرموز والخدمات التي تحتاجها\n\nإذن تثبيت التطبيقات في النظام يظهر فقط عندما تختار التثبيت في النظام.\n");
         body.setTextColor(Color.rgb(190,207,228));
         body.setTextSize(17);
         body.setGravity(Gravity.RIGHT);
@@ -60,6 +60,8 @@ public class PermissionActivity extends Activity {
             ArrayList<String> p=new ArrayList<String>();
             if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED) p.add(Manifest.permission.ACCESS_FINE_LOCATION);
             if(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED) p.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+            if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED) p.add(Manifest.permission.RECORD_AUDIO);
+            if(checkSelfPermission(Manifest.permission.CAMERA)!=PackageManager.PERMISSION_GRANTED) p.add(Manifest.permission.CAMERA);
             if(Build.VERSION.SDK_INT<=32 && checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED) p.add(Manifest.permission.READ_EXTERNAL_STORAGE);
             if(Build.VERSION.SDK_INT<=28 && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED) p.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             if(!p.isEmpty()){
