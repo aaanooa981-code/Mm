@@ -194,8 +194,10 @@ public class MainActivity extends Activity implements LocationListener {
             }
         });
 
+        root.addView(NajmNavigation.create(this),new LinearLayout.LayoutParams(-1,dp(54)));
         setContentView(shell);
         animateIn(root);
+        NajmHints.show(this,"main_navigation","تلميح","استخدم ◁ للرجوع للتطبيق السابق، ○ للهوم، و▢ للتطبيقات المفتوحة.");
         requestLocation();
     }
 
@@ -305,7 +307,10 @@ public class MainActivity extends Activity implements LocationListener {
         if(!shadeOpen)return;shadeOpen=false;shade.animate().translationY(-dp(290)).alpha(0f).setDuration(200).withEndAction(new Runnable(){@Override public void run(){shade.setVisibility(View.GONE);}}).start();
     }
 
-    @Override public void onBackPressed(){if(shadeOpen)hideShade();else super.onBackPressed();}
+    @Override public void onBackPressed(){
+        if(shadeOpen){hideShade();return;}
+        try{moveTaskToBack(true);}catch(Exception e){super.onBackPressed();}
+    }
     @Override protected void onResume(){super.onResume();handler.post(tick);}
     @Override protected void onPause(){handler.removeCallbacks(tick);super.onPause();}
     @Override protected void onDestroy(){try{if(locationManager!=null)locationManager.removeUpdates(this);}catch(Exception ignored){}super.onDestroy();}
