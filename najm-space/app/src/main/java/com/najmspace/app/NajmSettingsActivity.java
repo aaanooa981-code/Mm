@@ -17,6 +17,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 public class NajmSettingsActivity extends Activity {
+    private static final int PICK_STORAGE=601;
     private SharedPreferences prefs;
     private LinearLayout content;
 
@@ -88,9 +89,14 @@ public class NajmSettingsActivity extends Activity {
         return t;
     }
 
-    private TextView sub(String s){
-        TextView t=txt(s,14,Color.rgb(160,183,210),false);
+    private TextView sub(final String s){
+        TextView t=txt("ⓘ  تلميح",14,Color.rgb(105,190,255),false);
         t.setPadding(0,0,0,dp(14));
+        t.setOnClickListener(new View.OnClickListener(){
+            @Override public void onClick(View v){
+                NajmHints.show(NajmSettingsActivity.this,"settings_"+Math.abs(s.hashCode()),"تلميح",s);
+            }
+        });
         return t;
     }
 
@@ -120,6 +126,7 @@ public class NajmSettingsActivity extends Activity {
             content.addView(toggle("تشغيل تلقائي عند فتح الجهاز", "auto_start", true));
             content.addView(toggle("إظهار الساعة والتاريخ", "clock", true));
             content.addView(toggle("تفعيل الأنميشن", "animations", true));
+            action("إعادة إظهار كل التلميحات",new View.OnClickListener(){@Override public void onClick(View v){NajmHints.reset(NajmSettingsActivity.this);NajmHints.show(NajmSettingsActivity.this,"hints_reset","التلميحات","تمت إعادة تفعيل التلميحات.");}});
         }
 
         if(s==1){
@@ -163,6 +170,10 @@ public class NajmSettingsActivity extends Activity {
             storageInfo.setPadding(dp(12),dp(10),dp(12),dp(14));
             storageInfo.setBackgroundColor(Color.rgb(15,33,54));
             content.addView(storageInfo);
+            action("التخزين: تلقائي",new View.OnClickListener(){@Override public void onClick(View v){NajmStorage.setMode(NajmSettingsActivity.this,NajmStorage.AUTO);showSection(5);}});
+            action("التخزين: الذاكرة الداخلية",new View.OnClickListener(){@Override public void onClick(View v){NajmStorage.setMode(NajmSettingsActivity.this,NajmStorage.INTERNAL);showSection(5);}});
+            action("التخزين: الذاكرة الخارجية",new View.OnClickListener(){@Override public void onClick(View v){NajmStorage.setMode(NajmSettingsActivity.this,NajmStorage.EXTERNAL);showSection(5);}});
+            action("اختيار مجلد يدوي",new View.OnClickListener(){@Override public void onClick(View v){startActivityForResult(new Intent(NajmSettingsActivity.this,StoragePickerActivity.class),PICK_STORAGE);}});
             action("فتح التطبيقات المحفوظة",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmAppsActivity.class));}});
             action("مدير الملفات / USB",new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmSettingsActivity.this,NajmFileManagerActivity.class));}});
             action("مسح التطبيقات المستوردة",new View.OnClickListener(){@Override public void onClick(View v){clearImported();}});
@@ -179,7 +190,7 @@ public class NajmSettingsActivity extends Activity {
 
         if(s==7){
             content.addView(heading("حول Najm Space"));
-            content.addView(sub("Najm Space V1.3\\nAndroid 4.4+\\nواجهة سيارة + App Space + Runtime Engine"));
+            content.addView(sub("Najm Space V1.4\\nAndroid 4.4+\\nواجهة سيارة + App Space + Runtime Engine"));
             TextView note=txt("محرك تشغيل APK الافتراضي الكامل على Android 4.4.2 ما زال قيد التطوير. الخدمات التي يمكن تشغيلها داخليًا تعمل عبر Internal Runtime.",15,Color.rgb(205,215,230),false);
             content.addView(note);
         }
@@ -187,6 +198,14 @@ public class NajmSettingsActivity extends Activity {
         content.setAlpha(0f);
         content.setTranslationX(dp(18));
         content.animate().alpha(1f).translationX(0f).setDuration(150).start();
+    }
+
+    @Override protected void onActivityResult(int request,int result,Intent data){
+        super.onActivityResult(request,result,data);
+        if(request==PICK_STORAGE && result==RESULT_OK){
+            showSection(5);
+            NajmHints.show(this,"storage_changed","التخزين","تم تغيير مكان تخزين Najm Space.");
+        }
     }
 
     private void clearImported(){
