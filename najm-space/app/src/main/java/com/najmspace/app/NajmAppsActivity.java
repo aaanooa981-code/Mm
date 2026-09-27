@@ -71,7 +71,7 @@ public class NajmAppsActivity extends Activity {
         maps.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){RuntimeRouter.openWeb(NajmAppsActivity.this,"Najm Maps","https://www.openstreetmap.org");}});
         LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(-1,52);mp.topMargin=6;root.addView(maps,mp);
 
-        LinearLayout imports=new LinearLayout(this);
+        Button filesBtn=new Button(this); filesBtn.setText("📁 مدير الملفات / USB"); filesBtn.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){startActivity(new Intent(NajmAppsActivity.this,NajmFileManagerActivity.class));}}); LinearLayout.LayoutParams fbp=new LinearLayout.LayoutParams(-1,52);fbp.topMargin=8;root.addView(filesBtn,fbp);\n\n        LinearLayout imports=new LinearLayout(this);
         imports.setOrientation(LinearLayout.HORIZONTAL);
 
         Button miniBtn=new Button(this);
