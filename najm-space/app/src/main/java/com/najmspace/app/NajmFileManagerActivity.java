@@ -277,4 +277,9 @@ public class NajmFileManagerActivity extends Activity {
         }catch(Exception ignored){}finally{if(c!=null)c.close();}
         return null;
     }
+    @Override protected void onResume(){
+        super.onResume();
+        NajmRecentStore.touch(this,"files","مدير الملفات","com.najmspace.app.NajmFileManagerActivity");
+    }
+
 }
