@@ -86,7 +86,7 @@ public class NajmAppsActivity extends Activity {
 
         ScrollView scroll=new ScrollView(this);
         grid=new GridLayout(this);
-        grid.setColumnCount(6);
+        grid.setColumnCount(5);
         grid.setUseDefaultMargins(false);
         grid.setAlignmentMode(GridLayout.ALIGN_BOUNDS);
         grid.setPadding(0,0,0,dp(8));
@@ -187,10 +187,10 @@ public class NajmAppsActivity extends Activity {
         TextView icon=new TextView(this);
         icon.setText(symbol);
         icon.setTextColor(Color.WHITE);
-        icon.setTextSize(34);
+        icon.setTextSize(40);
         icon.setGravity(Gravity.CENTER);
         icon.setBackgroundColor(color);
-        LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(68),dp(68));
+        LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(82),dp(82));
         ilp.topMargin=dp(4);
         tile.addView(icon,ilp);
         addNameLabel(tile,name);
@@ -203,7 +203,7 @@ public class NajmAppsActivity extends Activity {
         ImageView icon=new ImageView(this);
         icon.setImageResource(R.mipmap.ic_launcher);
         icon.setPadding(dp(6),dp(6),dp(6),dp(6));
-        LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(68),dp(68));
+        LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(82),dp(82));
         ilp.topMargin=dp(4);
         tile.addView(icon,ilp);
         addNameLabel(tile,name);
@@ -247,14 +247,14 @@ public class NajmAppsActivity extends Activity {
             ImageView icon=new ImageView(this);
             icon.setImageDrawable(iconDrawable);
             icon.setPadding(dp(4),dp(4),dp(4),dp(4));
-            LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(68),dp(68));
+            LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(82),dp(82));
             ilp.topMargin=dp(4);
             tile.addView(icon,ilp);
         }else{
             ImageView icon=new ImageView(this);
             icon.setImageResource(R.mipmap.ic_launcher);
             icon.setPadding(dp(6),dp(6),dp(6),dp(6));
-            LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(68),dp(68));
+            LinearLayout.LayoutParams ilp=new LinearLayout.LayoutParams(dp(82),dp(82));
             ilp.topMargin=dp(4);
             tile.addView(icon,ilp);
         }
@@ -302,7 +302,7 @@ public class NajmAppsActivity extends Activity {
         TextView label=new TextView(this);
         label.setText(name);
         label.setTextColor(Color.WHITE);
-        label.setTextSize(12);
+        label.setTextSize(13);
         label.setGravity(Gravity.CENTER);
         label.setMaxLines(2);
         label.setTypeface(Typeface.DEFAULT_BOLD);
@@ -314,7 +314,7 @@ public class NajmAppsActivity extends Activity {
     private void addTile(View tile){
         GridLayout.LayoutParams lp=new GridLayout.LayoutParams();
         lp.width=0;
-        lp.height=dp(138);
+        lp.height=dp(158);
         lp.columnSpec=GridLayout.spec(GridLayout.UNDEFINED,1f);
         lp.setMargins(dp(6),dp(6),dp(6),dp(6));
         grid.addView(tile,lp);
