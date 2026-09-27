@@ -191,7 +191,7 @@ public class NajmSettingsActivity extends Activity {
 
         if(s==7){
             content.addView(heading("حول Najm Space"));
-            content.addView(sub("Najm Space V1.5\\nAndroid 4.4+\\nواجهة سيارة + App Space + Runtime Engine"));
+            content.addView(sub("Najm Space V1.7\\nAndroid 4.4+\\nواجهة سيارة + App Space + Runtime Engine"));
             TextView note=txt("محرك تشغيل APK الافتراضي الكامل على Android 4.4.2 ما زال قيد التطوير. الخدمات التي يمكن تشغيلها داخليًا تعمل عبر Internal Runtime.",15,Color.rgb(205,215,230),false);
             content.addView(note);
         }
