@@ -22,7 +22,13 @@ public final class NajmNavigation {
 
         TextView back=item(a,"◁","رجوع");
         back.setOnClickListener(new View.OnClickListener(){
-            @Override public void onClick(View v){ a.onBackPressed(); }
+            @Override public void onClick(View v){
+                if(a instanceof MainActivity){
+                    try{a.moveTaskToBack(true);}catch(Exception e){a.finish();}
+                }else{
+                    a.onBackPressed();
+                }
+            }
         });
 
         TextView home=item(a,"○","هوم");
