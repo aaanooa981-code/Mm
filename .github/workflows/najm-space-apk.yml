@@ -18,6 +18,9 @@ jobs:
           git clone -q https://github.com/DroidPluginTeam/DroidPlugin.git /tmp/DroidPlugin
           git -C /tmp/DroidPlugin checkout -q c6ebf652e0f73aa0e5746766e117e51efaf41dbd
           cp -R /tmp/DroidPlugin/project/Libraries/DroidPlugin najm-space/droidplugin
+          mkdir -p najm-space/app/src/main/assets/licenses
+          cp /tmp/DroidPlugin/LICENSE najm-space/app/src/main/assets/licenses/DroidPlugin-LGPL-3.0.txt
+          printf 'DroidPlugin source: https://github.com/DroidPluginTeam/DroidPlugin\nPinned commit: c6ebf652e0f73aa0e5746766e117e51efaf41dbd\n' > najm-space/app/src/main/assets/licenses/DroidPlugin-SOURCE.txt
           sed -i 's/package="com.morgoo.droidplugin"//' najm-space/droidplugin/src/main/AndroidManifest.xml
           cat > najm-space/droidplugin/build.gradle <<'EOF'
           plugins { id 'com.android.library' }
@@ -64,6 +67,9 @@ jobs:
             https://github.com/ReVanced/revanced-manager/releases/download/v2.6.0/revanced-manager-2.6.0.apk \
             -o najm-space/app/src/main/assets/preload/revanced-manager-2.6.0.apk
           echo "cba4c461553ea74eb25a7b2e1842419c7f4f40adc619b10d518c114204b7e846  najm-space/app/src/main/assets/preload/revanced-manager-2.6.0.apk" | sha256sum -c -
+          mkdir -p najm-space/app/src/main/assets/licenses
+          curl -L --fail https://raw.githubusercontent.com/ReVanced/revanced-manager/v2.6.0/LICENSE -o najm-space/app/src/main/assets/licenses/ReVanced-Manager-GPL-3.0.txt
+          printf 'ReVanced Manager source: https://github.com/ReVanced/revanced-manager/tree/v2.6.0\nBundled APK version: 2.6.0\n' > najm-space/app/src/main/assets/licenses/ReVanced-Manager-SOURCE.txt
 
       - uses: gradle/actions/setup-gradle@v4
         with:
