@@ -50,6 +50,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private boolean shadeOpen=false;
     private final Handler handler=new Handler();
     private LocationManager locationManager;
+    private boolean locationListening=false;
     private double lastLat=24.7136,lastLon=46.6753;
     private static final int REQ_LOCATION=91;
     private static final int REQ_VOICE=92;
@@ -357,9 +358,9 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         try{
             locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
             if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                gpsState.setText("GPS: متصل"); locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,900,1f,this);
+                gpsState.setText("GPS: متصل"); locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,900,1f,this); locationListening=true;
             }else if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-                gpsState.setText("GPS: شبكة"); locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1800,8f,this);
+                gpsState.setText("GPS: شبكة"); locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1800,8f,this); locationListening=true;
             }else gpsState.setText("GPS: غير مفعّل");
         }catch(Exception e){gpsState.setText("GPS: غير متاح");}
     }
@@ -476,11 +477,20 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         super.onResume();
         handler.post(tick);
         NajmRecentStore.touch(this,"home","الرئيسية","com.najmspace.app.MainActivity");
+        if(homeMap!=null)homeMap.onResume();
+        if(!locationListening)startLocationIfAllowed();
         if(sensorManager!=null && orientationSensor!=null) sensorManager.registerListener(this,orientationSensor,SensorManager.SENSOR_DELAY_UI);
     }
     @Override protected void onPause(){
         handler.removeCallbacks(tick);
         if(sensorManager!=null)sensorManager.unregisterListener(this);
+        if(homeMap!=null)homeMap.onPause();
+        try{
+            if(locationManager!=null && locationListening){
+                locationManager.removeUpdates(this);
+                locationListening=false;
+            }
+        }catch(Exception ignored){}
         super.onPause();
     }
     @Override protected void onDestroy(){try{if(locationManager!=null)locationManager.removeUpdates(this);}catch(Exception ignored){}super.onDestroy();}
