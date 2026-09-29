@@ -3,6 +3,13 @@ package com.najmspace.app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
+
+import com.morgoo.droidplugin.core.PluginDirHelper;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 
@@ -10,8 +17,12 @@ import com.morgoo.droidplugin.pm.PluginManager;
 import com.morgoo.helper.compat.PackageManagerCompat;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 public final class NajmContainer {
+    private static final String REVANCED_PKG="app.revanced.manager.flutter";
+    private static volatile boolean revancedWatcherRunning=false;
     private NajmContainer(){}
 
     public static boolean isReady(){
@@ -64,6 +75,7 @@ public final class NajmContainer {
     }
 
     public static void launch(final Activity activity, final String packageName){
+        if(REVANCED_PKG.equals(packageName))startRevancedOutputWatcher(activity.getApplicationContext());
         try{
             Intent i=activity.getPackageManager().getLaunchIntentForPackage(packageName);
             if(i==null){
