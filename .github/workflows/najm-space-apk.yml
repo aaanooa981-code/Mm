@@ -12,6 +12,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Prepare Najm Container engine
+        run: |
+          rm -rf /tmp/DroidPlugin najm-space/droidplugin
+          git clone -q https://github.com/DroidPluginTeam/DroidPlugin.git /tmp/DroidPlugin
+          git -C /tmp/DroidPlugin checkout -q c6ebf652e0f73aa0e5746766e117e51efaf41dbd
+          cp -R /tmp/DroidPlugin/project/Libraries/DroidPlugin najm-space/droidplugin
+          sed -i 's/package="com.morgoo.droidplugin"//' najm-space/droidplugin/src/main/AndroidManifest.xml
+          cat > najm-space/droidplugin/build.gradle <<'EOF'
+          plugins { id 'com.android.library' }
+          android {
+              namespace 'com.morgoo.droidplugin'
+              compileSdk 35
+              defaultConfig {
+                  minSdk 19
+                  targetSdk 28
+                  buildConfigField "String", "AUTHORITY_NAME", "\"com.najmspace.app.droidplugin_stub\""
+                  manifestPlaceholders = [authorityName:"com.najmspace.app.droidplugin_stub"]
+              }
+              buildFeatures {
+                  aidl true
+                  buildConfig true
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_1_8
+                  targetCompatibility JavaVersion.VERSION_1_8
+              }
+              lint { abortOnError false }
+          }
+          dependencies {
+              compileOnly fileTree(dir: 'lib', include: ['*.jar'])
+              implementation fileTree(dir: 'libs', include: ['*.jar'])
+          }
+          EOF
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -40,5 +73,5 @@ jobs:
         run: gradle assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: Najm_Space_V2.7_API19
+          name: Najm_Space_V3.0_CONTAINER_API19
           path: najm-space/app/build/outputs/apk/debug/app-debug.apk
