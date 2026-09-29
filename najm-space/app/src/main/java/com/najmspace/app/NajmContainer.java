@@ -97,6 +97,116 @@ public final class NajmContainer {
         }catch(Throwable e){return false;}
     }
 
+    public static void startRevancedOutputWatcher(final Context context){
+        if(context==null || revancedWatcherRunning)return;
+        revancedWatcherRunning=true;
+        final Context app=context.getApplicationContext();
+
+        Thread t=new Thread(new Runnable(){
+            @Override public void run(){
+                long deadline=System.currentTimeMillis()+(45L*60L*1000L);
+                long lastLen=-1L;
+                long lastModified=-1L;
+                int stable=0;
+                try{
+                    File pluginData=new File(PluginDirHelper.getPluginDataDir(app,REVANCED_PKG));
+                    File output=new File(pluginData,"files/ui_ephemeral/installer/output.apk");
+
+                    while(System.currentTimeMillis()<deadline){
+                        try{
+                            if(output.exists() && output.isFile() && output.length()>100000L){
+                                long len=output.length();
+                                long mod=output.lastModified();
+                                if(len==lastLen && mod==lastModified)stable++;
+                                else stable=0;
+                                lastLen=len;
+                                lastModified=mod;
+
+                                long stamp=(mod*31L)+len;
+                                long done=app.getSharedPreferences("najmspace",Context.MODE_PRIVATE)
+                                    .getLong("revanced_output_installed_stamp",-1L);
+
+                                if(stable>=3 && stamp!=done){
+                                    if(installRevancedOutput(app,output,stamp)){
+                                        stable=0;
+                                    }
+                                }
+                            }else{
+                                stable=0;
+                                lastLen=-1L;
+                                lastModified=-1L;
+                            }
+                            Thread.sleep(1500L);
+                        }catch(InterruptedException e){
+                            break;
+                        }catch(Throwable ignored){
+                            try{Thread.sleep(2000L);}catch(Exception e){break;}
+                        }
+                    }
+                }finally{
+                    revancedWatcherRunning=false;
+                }
+            }
+        },"NajmRevancedOutputWatcher");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private static boolean installRevancedOutput(final Context app,File output,long stamp){
+        try{
+            PackageInfo pi=app.getPackageManager().getPackageArchiveInfo(output.getAbsolutePath(),0);
+            if(pi==null || pi.packageName==null || pi.packageName.length()==0)return false;
+
+            File apps=NajmStorage.appsDir(app);
+            String safe=pi.packageName.replaceAll("[^A-Za-z0-9._-]","_");
+            File saved=new File(apps,"patched_"+safe+".apk");
+            copyFile(output,saved);
+
+            PluginManager pm=PluginManager.getInstance();
+            pm.waitForConnected(5000);
+            if(!pm.isConnected())return false;
+
+            int result=pm.installPackage(saved.getAbsolutePath(),PackageManagerCompat.INSTALL_REPLACE_EXISTING);
+            if(result==PackageManagerCompat.INSTALL_SUCCEEDED ||
+               result==PackageManagerCompat.INSTALL_FAILED_ALREADY_EXISTS){
+                app.getSharedPreferences("najmspace",Context.MODE_PRIVATE).edit()
+                    .putLong("revanced_output_installed_stamp",stamp)
+                    .putString("revanced_last_installed_package",pi.packageName)
+                    .apply();
+
+                final String name=loadArchiveLabel(app,pi,saved);
+                new Handler(Looper.getMainLooper()).post(new Runnable(){
+                    @Override public void run(){
+                        Toast.makeText(app,"تم تثبيت "+name+" داخل Najm Space",Toast.LENGTH_LONG).show();
+                    }
+                });
+                return true;
+            }
+        }catch(Throwable ignored){}
+        return false;
+    }
+
+    private static String loadArchiveLabel(Context app,PackageInfo pi,File apk){
+        try{
+            pi.applicationInfo.sourceDir=apk.getAbsolutePath();
+            pi.applicationInfo.publicSourceDir=apk.getAbsolutePath();
+            CharSequence label=app.getPackageManager().getApplicationLabel(pi.applicationInfo);
+            if(label!=null && label.length()>0)return label.toString();
+        }catch(Throwable ignored){}
+        return pi.packageName==null?"التطبيق":pi.packageName;
+    }
+
+    private static void copyFile(File from,File to) throws Exception{
+        FileInputStream in=new FileInputStream(from);
+        FileOutputStream out=new FileOutputStream(to);
+        byte[] buf=new byte[32768];
+        int n;
+        while((n=in.read(buf))>0)out.write(buf,0,n);
+        out.flush();
+        out.close();
+        in.close();
+    }
+
     private static String apiName(int api){
         if(api==26)return "8.0";
         if(api==23)return "6.0";
