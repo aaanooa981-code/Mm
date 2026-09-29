@@ -165,15 +165,14 @@ public class NajmAppsActivity extends Activity {
                 final String finalPkg=pkg;
                 final boolean isAppGallery="com.huawei.appmarket".equals(finalPkg) || finalName.toLowerCase().contains("appgallery");
 
-                View tile=createAppTile(finalName,icon,isAppGallery?"جاهز":"محفوظ");
+                View tile=createAppTile(finalName,icon,"Najm Container");
                 tile.setOnClickListener(new View.OnClickListener(){
                     @Override public void onClick(View v){
-                        if(isAppGallery){
-                            RuntimeRouter.openWeb(NajmAppsActivity.this,"HUAWEI AppGallery","https://consumer.huawei.com/sa/mobileservices/appgallery/");
-                        }else{
-                            NajmHints.show(NajmAppsActivity.this,"legacy_apk","التطبيق",
-                                "هذا الـAPK محفوظ داخل Najm Space. تشغيل APK كامل داخل الحاوية ينتظر Legacy Container.");
+                        if(finalPkg==null || finalPkg.length()==0){
+                            NajmHints.show(NajmAppsActivity.this,"bad_apk","التطبيق","تعذر قراءة اسم حزمة هذا الـAPK.");
+                            return;
                         }
+                        NajmContainer.installAndLaunch(NajmAppsActivity.this,f,finalPkg,0);
                     }
                 });
                 tile.setOnLongClickListener(new View.OnLongClickListener(){
@@ -327,37 +326,16 @@ public class NajmAppsActivity extends Activity {
 
     private void openBundledReVanced(){
         final String pkg="app.revanced.manager.flutter";
-        Intent launch=getPackageManager().getLaunchIntentForPackage(pkg);
-        if(launch!=null){
-            launch.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(launch);
+
+        if(NajmContainer.isInstalled(pkg)){
+            NajmContainer.launch(this,pkg);
             return;
         }
 
-        if(Build.VERSION.SDK_INT<26){
-            new AlertDialog.Builder(this)
-                .setTitle("ReVanced Manager")
-                .setMessage("الإصدار 2.6.0 يحتاج Android 8.0 أو أحدث. هذه الشاشة أقدم من الإصدار المطلوب، لذلك لن يعمل عليها.")
-                .setPositiveButton("موافق",null)
-                .show();
-            return;
-        }
-
-        new AlertDialog.Builder(this)
-            .setTitle("ReVanced Manager 2.6.0")
-            .setMessage("التطبيق مدمج داخل Najm Space. يحتاج تثبيت أندرويد مرة واحدة، وبعدها يفتح مباشرة من أيقونته داخل Najm Space.")
-            .setPositiveButton("تثبيت وتشغيل",new DialogInterface.OnClickListener(){
-                @Override public void onClick(DialogInterface d,int w){installBundledReVanced();}
-            })
-            .setNegativeButton("إلغاء",null)
-            .show();
-    }
-
-    private void installBundledReVanced(){
         try{
-            File cacheDir=new File(getCacheDir(),"install");
-            if(!cacheDir.exists())cacheDir.mkdirs();
-            File out=new File(cacheDir,"revanced-manager-2.6.0.apk");
+            File preloadDir=new File(getCacheDir(),"najm_container");
+            if(!preloadDir.exists())preloadDir.mkdirs();
+            File out=new File(preloadDir,"revanced-manager-2.6.0.apk");
 
             if(!out.exists() || out.length()<46000000L){
                 InputStream in=getAssets().open("preload/revanced-manager-2.6.0.apk");
@@ -370,15 +348,11 @@ public class NajmAppsActivity extends Activity {
                 in.close();
             }
 
-            Uri uri=Uri.parse("content://"+getPackageName()+".apkprovider/"+Uri.encode(out.getName()));
-            Intent i=new Intent(Intent.ACTION_VIEW);
-            i.setDataAndType(uri,"application/vnd.android.package-archive");
-            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(i);
+            NajmContainer.installAndLaunch(this,out,pkg,26);
         }catch(Exception e){
             new AlertDialog.Builder(this)
-                .setTitle("تعذر تثبيت ReVanced")
-                .setMessage("تأكد من السماح لـ Najm Space بتثبيت التطبيقات من مصادر غير معروفة.")
+                .setTitle("ReVanced Manager")
+                .setMessage("تعذر تجهيز التطبيق داخل Najm Container: "+e.getMessage())
                 .setPositiveButton("موافق",null)
                 .show();
         }
