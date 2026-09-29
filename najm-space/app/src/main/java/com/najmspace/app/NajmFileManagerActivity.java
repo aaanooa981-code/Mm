@@ -191,17 +191,29 @@ public class NajmFileManagerActivity extends Activity {
     }
 
     private void installIntoNajm(File apk){
-        File dir=NajmStorage.appsDir(this);
-        File out=new File(dir,safe(apk.getName()));
-        copyFile(apk,out);
-        AlertDialog.Builder b=new AlertDialog.Builder(this);
-        b.setTitle("Najm Space");
-        b.setMessage("تم حفظ التطبيق داخل مساحة Najm Space. سيظهر في NAJM APP SPACE ضمن Legacy Container.");
-        b.setPositiveButton("فتح NAJM APP SPACE",new DialogInterface.OnClickListener(){
-            @Override public void onClick(DialogInterface d,int w){startActivity(new Intent(NajmFileManagerActivity.this,NajmAppsActivity.class));}
-        });
-        b.setNegativeButton("إغلاق",null);
-        b.show();
+        try{
+            android.content.pm.PackageInfo pi=getPackageManager().getPackageArchiveInfo(apk.getAbsolutePath(),0);
+            String pkg=pi==null?null:pi.packageName;
+            if(pkg==null || pkg.length()==0){
+                new AlertDialog.Builder(this)
+                    .setTitle("Najm Container")
+                    .setMessage("تعذر قراءة اسم حزمة التطبيق.")
+                    .setPositiveButton("موافق",null)
+                    .show();
+                return;
+            }
+
+            File dir=NajmStorage.appsDir(this);
+            File out=new File(dir,safe(apk.getName()));
+            copyFile(apk,out);
+            NajmContainer.installAndLaunch(this,out,pkg,0);
+        }catch(Exception e){
+            new AlertDialog.Builder(this)
+                .setTitle("Najm Container")
+                .setMessage("تعذر تجهيز التطبيق داخل الحاوية.")
+                .setPositiveButton("موافق",null)
+                .show();
+        }
     }
 
     private void installIntoSystem(File apk){
