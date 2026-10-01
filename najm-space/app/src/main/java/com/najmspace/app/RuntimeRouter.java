@@ -2,6 +2,7 @@ package com.najmspace.app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 
 public final class RuntimeRouter {
     public static final String MODE_WEB="internal_web";
@@ -17,6 +18,10 @@ public final class RuntimeRouter {
     }
 
     public static void openYouTube(Activity a){
+        if(Build.VERSION.SDK_INT<=20){
+            NajmLegacyYouTube.open(a);
+            return;
+        }
         Intent i=new Intent(a,NajmYouTubeActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP);
         a.startActivity(i);
