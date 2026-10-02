@@ -2,25 +2,29 @@ package com.najmspace.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Intent;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.morgoo.droidplugin.core.PluginDirHelper;
-import android.content.pm.PackageInfo;
-import android.os.Build;
-
 import com.morgoo.droidplugin.pm.PluginManager;
 import com.morgoo.helper.compat.PackageManagerCompat;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.List;
 
 public final class NajmContainer {
+    private static final String TAG="NajmContainer";
     private static final String REVANCED_PKG="app.revanced.manager.flutter";
     private static volatile boolean revancedWatcherRunning=false;
     private NajmContainer(){}
@@ -57,17 +61,21 @@ public final class NajmContainer {
 
                     if(existing==null){
                         final int result=pm.installPackage(apk.getAbsolutePath(),0);
+                        Log.i(TAG,"installPackage("+packageName+") result="+result);
                         if(result!=PackageManagerCompat.INSTALL_SUCCEEDED &&
                            result!=PackageManagerCompat.INSTALL_FAILED_ALREADY_EXISTS){
                             show(activity,"Najm Container","تعذر تثبيت التطبيق داخل الحاوية. رمز النتيجة: "+result);
                             return;
                         }
+                    }else{
+                        Log.i(TAG,"Plugin already installed inside Najm Container: "+packageName);
                     }
 
                     activity.runOnUiThread(new Runnable(){
                         @Override public void run(){launch(activity,packageName);}
                     });
                 }catch(final Throwable e){
+                    Log.e(TAG,"installAndLaunch failed for "+packageName,e);
                     show(activity,"Najm Container","تعذر تشغيل التطبيق داخل الحاوية: "+shortMessage(e));
                 }
             }
@@ -75,18 +83,76 @@ public final class NajmContainer {
     }
 
     public static void launch(final Activity activity, final String packageName){
+        if(activity==null || packageName==null || packageName.length()==0)return;
         if(REVANCED_PKG.equals(packageName))startRevancedOutputWatcher(activity.getApplicationContext());
+
         try{
-            Intent i=activity.getPackageManager().getLaunchIntentForPackage(packageName);
-            if(i==null){
-                show(activity,"Najm Container","تمت إضافة التطبيق للحاوية لكن تعذر العثور على شاشة التشغيل الرئيسية.");
+            final PluginManager pluginManager=PluginManager.getInstance();
+            pluginManager.waitForConnected(5000);
+            if(!pluginManager.isConnected()){
+                show(activity,"Najm Container","محرك الحاوية غير متصل. أغلق شاشة التطبيقات وافتحها من جديد ثم حاول مرة أخرى.");
                 return;
             }
+
+            PackageInfo pluginInfo=null;
+            try{pluginInfo=pluginManager.getPackageInfo(packageName,0);}catch(Throwable ignored){}
+            if(pluginInfo==null){
+                show(activity,"Najm Container","التطبيق غير موجود داخل الحاوية بعد. أعد إضافته إلى Najm Space.");
+                return;
+            }
+
+            Intent i=buildPluginLaunchIntent(pluginManager,packageName);
+            if(i==null){
+                Log.e(TAG,"No plugin launcher activity found for "+packageName);
+                show(activity,"Najm Container","تمت إضافة التطبيق للحاوية لكن تعذر العثور على شاشة التشغيل الرئيسية داخل الحاوية.");
+                return;
+            }
+
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            Log.i(TAG,"Launching plugin INSIDE container: "+packageName+" -> "+i.getComponent());
             activity.startActivity(i);
         }catch(Throwable e){
+            Log.e(TAG,"Container launch failed for "+packageName,e);
             show(activity,"Najm Container","تعذر فتح التطبيق داخل الحاوية: "+shortMessage(e));
         }
+    }
+
+    private static Intent buildPluginLaunchIntent(PluginManager pm,String packageName){
+        try{
+            Intent query=new Intent(Intent.ACTION_MAIN);
+            query.addCategory(Intent.CATEGORY_LAUNCHER);
+            query.setPackage(packageName);
+
+            ResolveInfo resolved=null;
+            try{resolved=pm.resolveIntent(query,null,0);}catch(Throwable e){
+                Log.w(TAG,"resolveIntent failed for "+packageName,e);
+            }
+
+            if(resolved==null || resolved.activityInfo==null){
+                try{
+                    List<ResolveInfo> all=pm.queryIntentActivities(query,null,0);
+                    if(all!=null && !all.isEmpty())resolved=all.get(0);
+                }catch(Throwable e){
+                    Log.w(TAG,"queryIntentActivities failed for "+packageName,e);
+                }
+            }
+
+            if(resolved!=null && resolved.activityInfo!=null){
+                String activityPackage=resolved.activityInfo.packageName;
+                if(activityPackage==null || activityPackage.length()==0)activityPackage=packageName;
+                String activityName=resolved.activityInfo.name;
+                if(activityName!=null && activityName.length()>0){
+                    Intent launch=new Intent(Intent.ACTION_MAIN);
+                    launch.addCategory(Intent.CATEGORY_LAUNCHER);
+                    launch.setComponent(new ComponentName(activityPackage,activityName));
+                    Log.i(TAG,"Resolved plugin launcher via DroidPlugin: "+launch.getComponent());
+                    return launch;
+                }
+            }
+        }catch(Throwable e){
+            Log.e(TAG,"buildPluginLaunchIntent failed for "+packageName,e);
+        }
+        return null;
     }
 
     public static boolean isInstalled(String packageName){
