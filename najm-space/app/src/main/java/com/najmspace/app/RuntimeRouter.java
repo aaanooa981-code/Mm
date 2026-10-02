@@ -11,6 +11,12 @@ public final class RuntimeRouter {
     private RuntimeRouter(){}
 
     public static void openWeb(Activity a,String title,String url){
+        String t=title==null?"":title.toLowerCase();
+        String u=url==null?"":url.toLowerCase();
+        if(t.contains("appgallery") || u.contains("appgallery.huawei.com") || u.contains("mobileservices/appgallery")){
+            a.startActivity(new Intent(a,HuaweiAppGalleryInstallerActivity.class));
+            return;
+        }
         Intent i=new Intent(a,InternalBrowserActivity.class);
         i.putExtra("title",title);
         i.putExtra("url",url);
