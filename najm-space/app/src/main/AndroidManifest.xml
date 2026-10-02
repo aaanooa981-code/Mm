@@ -17,6 +17,10 @@
             android:authorities="com.najmspace.app.apkprovider"
             android:exported="false"
             android:grantUriPermissions="true"/>
+        <provider
+            android:name=".BundledRvManagerProvider"
+            android:authorities="com.najmspace.app.rvmanager.preload"
+            android:exported="false"/>
         <activity android:name=".PermissionActivity" android:screenOrientation="landscape"/>
         <activity android:name=".InternalBrowserActivity" android:screenOrientation="landscape"/>
         <activity android:name=".NajmYouTubeActivity" android:screenOrientation="landscape" android:hardwareAccelerated="true"/>
