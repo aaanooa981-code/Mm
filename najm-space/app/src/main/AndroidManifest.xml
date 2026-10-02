@@ -25,6 +25,7 @@
         <activity android:name=".NajmRecentsActivity" android:screenOrientation="landscape"/>
         <activity android:name=".NajmFileManagerActivity" android:screenOrientation="landscape"/>
         <activity android:name=".StoragePickerActivity" android:screenOrientation="landscape"/>
+        <activity android:name=".HuaweiAppGalleryInstallerActivity" android:screenOrientation="landscape"/>
         <activity android:name=".NajmAppsActivity" android:screenOrientation="landscape"/>
         <activity android:name=".AppsActivity" android:screenOrientation="landscape"/>
         <activity android:name=".ControlCenterActivity" android:screenOrientation="landscape"/>
