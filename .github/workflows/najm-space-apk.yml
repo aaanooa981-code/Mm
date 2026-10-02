@@ -95,5 +95,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Najm_Space_V3.5_UI_REFRESH_API19
+          name: Najm_Space_V3.6_DRIVING_UI_API19
           path: najm-space/app/build/outputs/apk/debug/app-debug.apk
