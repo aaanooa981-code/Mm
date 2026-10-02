@@ -61,13 +61,16 @@ jobs:
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null || true
 
       - name: Install Android SDK packages
-        run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" "platforms;android-37"
+        run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Build bundled RV Manager Plus 3.6.17
         run: |
           rm -rf /tmp/vanced-manager-plus
           git clone -q https://github.com/vancedto/vanced-manager-plus.git /tmp/vanced-manager-plus
           git -C /tmp/vanced-manager-plus checkout -q 15fe35e61389e984e5594a4b150a1304a9196248
+          # The pinned 3.6.17 source declares compileSdk 37, which is not available on the runner SDK channel.
+          # It does not need API-37-only runtime behavior for this bundled debug build, so compile against API 35.
+          sed -i 's/compileSdk = 37/compileSdk = 35/' /tmp/vanced-manager-plus/app/build.gradle.kts
           cd /tmp/vanced-manager-plus
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
