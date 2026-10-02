@@ -1,7 +1,7 @@
 diff --git a/najm-space/droidplugin/src/main/java/com/morgoo/droidplugin/pm/parser/PackageParserApi21.java b/najm-space/droidplugin/src/main/java/com/morgoo/droidplugin/pm/parser/PackageParserApi21.java
 --- a/najm-space/droidplugin/src/main/java/com/morgoo/droidplugin/pm/parser/PackageParserApi21.java
 +++ b/najm-space/droidplugin/src/main/java/com/morgoo/droidplugin/pm/parser/PackageParserApi21.java
-@@ -110,10 +110,19 @@ class PackageParserApi21 extends PackageParser {
+@@ -110,9 +110,16 @@ class PackageParserApi21 extends PackageParser {
      @Override
      public void collectCertificates(int flags) throws Exception {
 -        // public void collectCertificates(Package pkg, int flags) throws PackageParserException
