@@ -61,7 +61,22 @@ jobs:
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null || true
 
       - name: Install Android SDK packages
-        run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
+        run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" "platforms;android-37"
+
+      - name: Build bundled RV Manager Plus 3.6.17
+        run: |
+          rm -rf /tmp/vanced-manager-plus
+          git clone -q https://github.com/vancedto/vanced-manager-plus.git /tmp/vanced-manager-plus
+          git -C /tmp/vanced-manager-plus checkout -q 15fe35e61389e984e5594a4b150a1304a9196248
+          cd /tmp/vanced-manager-plus
+          chmod +x gradlew
+          ./gradlew :app:assembleDebug --no-daemon
+          cd "$GITHUB_WORKSPACE"
+          mkdir -p najm-space/app/src/main/assets/preload najm-space/app/src/main/assets/licenses
+          cp /tmp/vanced-manager-plus/app/build/outputs/apk/debug/app-debug.apk \
+            najm-space/app/src/main/assets/preload/rv-manager-plus-3.6.17.apk
+          test -s najm-space/app/src/main/assets/preload/rv-manager-plus-3.6.17.apk
+          printf 'RV Manager Plus source: https://github.com/vancedto/vanced-manager-plus\nPinned source commit: 15fe35e61389e984e5594a4b150a1304a9196248\nBundled version: 3.6.17\nPackage: com.revanced.net.revancedmanager\nMinimum Android: API 26 / Android 8.0\n' > najm-space/app/src/main/assets/licenses/RV-Manager-Plus-SOURCE.txt
 
       - name: Download bundled ReVanced Manager
         run: |
@@ -95,5 +110,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Najm_Space_V3.7_APPGALLERY_CONTAINER_API19
+          name: Najm_Space_V3.8_RV_MANAGER_PLUS_3.6.17_API19
           path: najm-space/app/build/outputs/apk/debug/app-debug.apk
