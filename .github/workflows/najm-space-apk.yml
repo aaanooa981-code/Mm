@@ -21,8 +21,41 @@ jobs:
           cp -R /tmp/DroidPlugin/project/Libraries/DroidPlugin najm-space/droidplugin
           mkdir -p najm-space/app/src/main/assets/licenses
           cp /tmp/DroidPlugin/LICENSE najm-space/app/src/main/assets/licenses/DroidPlugin-LGPL-3.0.txt
-          printf 'DroidPlugin source: https://github.com/DroidPluginTeam/DroidPlugin\nPinned commit: c6ebf652e0f73aa0e5746766e117e51efaf41dbd\n' > najm-space/app/src/main/assets/licenses/DroidPlugin-SOURCE.txt
+          printf 'DroidPlugin source: https://github.com/DroidPluginTeam/DroidPlugin\nPinned commit: c6ebf652e0f73aa0e5746766e117e51efaf41dbd\nLocal compatibility patch: PackageParser.collectCertificates supports both (Package,int) and Android 9+ (Package,boolean).\n' > najm-space/app/src/main/assets/licenses/DroidPlugin-SOURCE.txt
           sed -i 's/package="com.morgoo.droidplugin"//' najm-space/droidplugin/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('najm-space/droidplugin/src/main/java/com/morgoo/droidplugin/pm/parser/PackageParserApi21.java')
+          s = p.read_text(encoding='utf-8')
+          old = '''    @Override
+              public void collectCertificates(int flags) throws Exception {
+                  // public void collectCertificates(Package pkg, int flags) throws PackageParserException
+                  Method method = MethodUtils.getAccessibleMethod(sPackageParserClass, "collectCertificates",
+                          mPackage.getClass(), int.class);
+                  method.invoke(mPackageParser, mPackage, flags);
+              }
+          '''
+          # Match without relying on exact indentation inserted by YAML.
+          old = old.replace('              ', '    ')
+          new = '''    @Override
+              public void collectCertificates(int flags) throws Exception {
+                  // Android 5-8 used collectCertificates(Package,int).
+                  // Android 9 changed it to collectCertificates(Package,boolean).
+                  try {
+                      Method method = MethodUtils.getAccessibleMethod(sPackageParserClass, "collectCertificates",
+                              mPackage.getClass(), int.class);
+                      method.invoke(mPackageParser, mPackage, flags);
+                  } catch (NoSuchMethodException oldSignatureMissing) {
+                      Method method = MethodUtils.getAccessibleMethod(sPackageParserClass, "collectCertificates",
+                              mPackage.getClass(), boolean.class);
+                      method.invoke(null, mPackage, false);
+                  }
+              }
+          '''.replace('              ', '    ')
+          if old not in s:
+              raise SystemExit('collectCertificates patch target not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
           cat > najm-space/droidplugin/build.gradle <<'EOF'
           plugins { id 'com.android.library' }
           android {
@@ -93,5 +126,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Najm_Space_V3.2_KITKAT_YOUTUBE_API19
+          name: Najm_Space_V3.3_CONTAINER_COMPAT_API19
           path: najm-space/app/build/outputs/apk/debug/app-debug.apk
